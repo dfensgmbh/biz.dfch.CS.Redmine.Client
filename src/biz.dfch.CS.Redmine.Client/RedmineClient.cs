@@ -152,6 +152,196 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Login
 
+        #region Projects
+
+        /// <summary>
+        /// Gets the list of projects
+        /// </summary>
+        /// <returns>The list of projects</returns>
+        public IList<Project> GetProjects()
+        {
+            return this.GetProjects(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of projects
+        /// </summary>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The list of projects</returns>
+        public IList<Project> GetProjects(int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetProjects({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<Project> projects = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    return redmineManager.GetObjectList<Project>(new NameValueCollection());
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return projects;
+        }
+
+        /// <summary>
+        /// Get a project
+        /// </summary>
+        /// <param name="id">ID of the project</param>
+        /// <returns>The project specified by the ID</returns>
+        public Project GetProject(int id)
+        {
+            return this.GetProject(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Get a project
+        /// </summary>
+        /// <param name="id">ID of the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The project specified by the ID</returns>
+        public Project GetProject(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No project id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            Project project = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    return redmineManager.GetObject<Project>(id.ToString(), new NameValueCollection());
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return project;
+        }
+
+        /// <summary>
+        /// Creates a new project
+        /// </summary>
+        /// <param name="project">The project to create</param>
+        /// <returns>The created project</returns>
+        public Project CreateProject(Project project)
+        {
+            return this.CreateProject(project, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new project
+        /// </summary>
+        /// <param name="project">The project to create</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The created project</returns>
+        public Project CreateProject(Project project, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != project, "No project defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.CreateProject({0}, {1}, {2})", project.Name, totalAttempts, baseRetryIntervallMilliseconds));
+
+            Project createdProject = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    return redmineManager.CreateObject(project);
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return createdProject;
+        }
+
+        /// <summary>
+        /// Updates a project
+        /// </summary>
+        /// <param name="project">The new project data</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated project</returns>
+        public Project UpdateProject(Project project)
+        {
+            return this.UpdateProject(project, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates a project
+        /// </summary>
+        /// <param name="project">The new project data</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated project</returns>
+        public Project UpdateProject(Project project, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != project, "No project defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.UpdateProject({0}, {1}, {2})", project.Name, totalAttempts, baseRetryIntervallMilliseconds));
+
+            Project updatedProject = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    redmineManager.UpdateObject(project.Id.ToString(), project);
+                    return this.GetProject(project.Id, totalAttempts, baseRetryIntervallMilliseconds);
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return updatedProject;
+        }
+
+        /// <summary>
+        /// Deletes a project
+        /// </summary>
+        /// <param name="id">The id of the project</param>
+        /// <returns>True if the project could be deleted</returns>
+        public bool DeleteProject(int id)
+        {
+            return this.DeleteProject(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+        
+        /// <summary>
+        /// Deletes a project
+        /// </summary>
+        /// <param name="id">The id of the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>True if the project could be deleted</returns>
+        public bool DeleteProject(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No project id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.DeleteProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    redmineManager.DeleteObject<Project>(id.ToString(), new NameValueCollection());
+                    return true;
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
+        }
+
+        #endregion Projects
+
         #region Redmine API Access
 
         /// <summary>

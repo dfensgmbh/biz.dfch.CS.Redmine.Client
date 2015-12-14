@@ -25,12 +25,20 @@ namespace biz.dfch.CS.Redmine.Client.Test
     public static class TestEnvironment
     {
         public static string RedminUrl { get; set; } 
-        public static string ApiKey { get; set; } 
+        public static string ApiKey { get; set; }
+        public static int TotalAttempts { get; set; }
+        public static int BaseRetryIntervallMilliseconds { get; set; }
+        public static int ProjectId { get; set; }
 
         static TestEnvironment()
         {
             TestEnvironment.RedminUrl = "http://192.168.213.128:10080/redmine";
             TestEnvironment.ApiKey = "d28258aff3fb6117b49770a9ff1cd868cdfe7ac5";
+            TestEnvironment.TotalAttempts = 3;
+            TestEnvironment.BaseRetryIntervallMilliseconds = 100;
+            TestEnvironment.ProjectId = 5;
         }
+
+        
     }
 }

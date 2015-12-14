@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Redmine.Net.Api.Types;
 
 namespace biz.dfch.CS.Redmine.Client.Test
 {
     [TestClass]
     public class RedmineClientTest
     {
+        [TestMethod]
+        public void DummyTestForTeamCity()
+        {
+        }
+
         #region Login
 
         [TestMethod]
@@ -13,7 +20,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void LoginCorrectCredentials()
         {
             RedmineClient redmineClient = new RedmineClient();
-            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, 3, 100);
+            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsTrue(success, "Could not log in.");
         }
@@ -26,7 +33,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             
             try
             {
-                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, 3, 100);
+                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
                 Assert.IsTrue(false, "Should throw an exception and never reach this line");
             }
             catch (Exception ex)
@@ -61,21 +68,43 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Project> projects = redmineClient.GetProjects(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(projects, "No projects received");
+            Assert.IsTrue(projects.Count > 0, "Project list is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = redmineClient.GetProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(project, "No project received");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectInvalidId()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Project project = redmineClient.GetProject(Int16.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -96,21 +125,89 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void CreateProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project was created via API",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "Created via API",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdProject, "No project received");
+            Assert.IsTrue(createdProject.Id > 0, "No Id defined in returned project");
+            Assert.AreEqual(project.Description, createdProject.Description, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.Identifier, createdProject.Identifier, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.IsPublic, createdProject.IsPublic, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.Name, createdProject.Name, "CreatedOn was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void UpdateProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project must be updated",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "To Update",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            createdProject.Description = "This project was updated via API";
+            createdProject.Name = "Update Project";
+            createdProject.IsPublic = true;
+
+            Project updatedProject = redmineClient.UpdateProject(createdProject, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedProject, "No project received");
+            Assert.AreEqual(createdProject.Description, updatedProject.Description, "CreatedOn was not set correctly");
+            Assert.AreEqual(createdProject.IsPublic, updatedProject.IsPublic, "CreatedOn was not set correctly");
+            Assert.AreEqual(createdProject.Name, updatedProject.Name, "CreatedOn was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void DeleteProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project was created via API",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "Created via API",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project loadedProject = redmineClient.GetProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedProject, "Project was not created correctly");
+
+            bool success = redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                Project loadedProjectAfterDeletion = redmineClient.GetProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }            
         }
 
         #endregion Projects
@@ -168,7 +265,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void DelteIssue()
+        public void DeleteIssue()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }
@@ -221,7 +318,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void DelteAttachement()
+        public void DeleteAttachement()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }
