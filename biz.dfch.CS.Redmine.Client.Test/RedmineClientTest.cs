@@ -125,7 +125,24 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void CreateProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project was created via API",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "Created via API",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdProject, "No project received");
+            Assert.IsTrue(createdProject.Id > 0, "No Id defined in returned project");
+            Assert.AreEqual(project.Description, createdProject.Description, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.Identifier, createdProject.Identifier, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.IsPublic, createdProject.IsPublic, "CreatedOn was not set correctly");
+            Assert.AreEqual(project.Name, createdProject.Name, "CreatedOn was not set correctly");
         }
 
         [TestMethod]
