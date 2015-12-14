@@ -31,7 +31,7 @@ namespace biz.dfch.CS.Redmine.Client
     public class RedmineClient
     {
         #region Constants
-        
+
         /// <summary>
         /// Default total attempts for calls
         /// </summary>
@@ -94,7 +94,7 @@ namespace biz.dfch.CS.Redmine.Client
         {
             return this.Login(redmineUrl, apiKey, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
- 
+
         /// <summary>
         ///  Checks if the user can be authorized on the server
         /// </summary>
@@ -123,13 +123,17 @@ namespace biz.dfch.CS.Redmine.Client
                     IList<Project> projects = redmineManager.GetObjectList<Project>(new NameValueCollection());
 
                     //if there is no error the credentials are valid
-                    return true;
+                    return null != projects;
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             if (this.IsLoggedIn)
             {
                 this.RedmineUrl = redmineUrl;
                 this.ApiKey = apiKey;
+            }
+            else
+            {
+                throw new Exception("User could not be authorized");
             }
 
             return this.IsLoggedIn;
