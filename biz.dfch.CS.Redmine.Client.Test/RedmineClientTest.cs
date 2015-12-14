@@ -12,7 +12,10 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void LoginCorrectCredentials()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, 3, 100);
+
+            Assert.IsTrue(success, "Coul not log in.");
         }
 
         [TestMethod]
