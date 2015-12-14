@@ -12,28 +12,45 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void LoginCorrectCredentials()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, 3, 100);
+
+            Assert.IsTrue(success, "Could not log in.");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void LoginWrongServerUrl()
         {
-            Assert.IsTrue(false, "Not yet implemented");
-        }
-
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void LoginInvalidUser()
-        {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            
+            try
+            {
+                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, 3, 100);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Equals("User could not be authorized"));
+            }
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void LoginInvalidApiKey()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+
+            try
+            {
+                bool success = redmineClient.Login(TestEnvironment.RedminUrl, "NotAnApiKey", 3, 100);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Unauthorized"));
+            }
+
         }
 
         #endregion Login
