@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Redmine.Net.Api.Types;
 
 namespace biz.dfch.CS.Redmine.Client.Test
 {
     [TestClass]
     public class RedmineClientTest
     {
+        [TestMethod]
+        public void DummyTestForTeamCity()
+        {
+        }
+
         #region Login
 
         [TestMethod]
@@ -13,7 +20,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void LoginCorrectCredentials()
         {
             RedmineClient redmineClient = new RedmineClient();
-            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, 3, 100);
+            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsTrue(success, "Could not log in.");
         }
@@ -26,7 +33,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             
             try
             {
-                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, 3, 100);
+                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
                 Assert.IsTrue(false, "Should throw an exception and never reach this line");
             }
             catch (Exception ex)
@@ -61,21 +68,43 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Project> projects = redmineClient.GetProjects(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(projects, "No projects received");
+            Assert.IsTrue(projects.Count > 0, "Project list is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = redmineClient.GetProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(project, "No project received");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectInvalidId()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Project project = redmineClient.GetProject(Int16.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
