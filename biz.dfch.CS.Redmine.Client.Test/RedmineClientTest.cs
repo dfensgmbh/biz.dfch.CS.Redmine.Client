@@ -143,6 +143,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(project.Identifier, createdProject.Identifier, "CreatedOn was not set correctly");
             Assert.AreEqual(project.IsPublic, createdProject.IsPublic, "CreatedOn was not set correctly");
             Assert.AreEqual(project.Name, createdProject.Name, "CreatedOn was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]
@@ -156,7 +158,33 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void DeleteProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project was created via API",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "Created via API",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project loadedProject = redmineClient.GetProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedProject, "Project was not created correctly");
+
+            bool success = redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                Project loadedProjectAfterDeletion = redmineClient.GetProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }            
         }
 
         #endregion Projects
@@ -214,7 +242,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void DelteIssue()
+        public void DeleteIssue()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }
@@ -267,7 +295,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void DelteAttachement()
+        public void DeleteAttachement()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }

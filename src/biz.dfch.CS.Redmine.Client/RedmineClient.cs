@@ -262,6 +262,44 @@ namespace biz.dfch.CS.Redmine.Client
             return createdProject;
         }
 
+        /// <summary>
+        /// Deletes a project
+        /// </summary>
+        /// <param name="id">The id of the project</param>
+        /// <returns>True if the project could be deleted</returns>
+        public bool DeleteProject(int id)
+        {
+            return this.DeleteProject(id);
+        }
+        
+        /// <summary>
+        /// Deletes a project
+        /// </summary>
+        /// <param name="id">The id of the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>True if the project could be deleted</returns>
+        public bool DeleteProject(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No project id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.DeleteProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    redmineManager.DeleteObject<Project>(id.ToString(), new NameValueCollection());
+                    return true;
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
+        }
+
         #endregion Projects
 
         #region Redmine API Access
