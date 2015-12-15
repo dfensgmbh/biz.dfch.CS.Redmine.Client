@@ -29,6 +29,11 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public static int TotalAttempts { get; set; }
         public static int BaseRetryIntervallMilliseconds { get; set; }
         public static int ProjectId { get; set; }
+        public static int IssueId { get; set; }
+        public static string UserLogin1 { get; set; }
+        public static string UserLogin2 { get; set; }
+        public static string ProjectIdentifier1 { get; set; }
+        public static string ProjectIdentifier2 { get; set; }
 
         static TestEnvironment()
         {
@@ -37,6 +42,11 @@ namespace biz.dfch.CS.Redmine.Client.Test
             TestEnvironment.TotalAttempts = 3;
             TestEnvironment.BaseRetryIntervallMilliseconds = 100;
             TestEnvironment.ProjectId = 5;
+            TestEnvironment.IssueId = 1;
+            TestEnvironment.UserLogin1 = "niklaus";
+            TestEnvironment.UserLogin2 = "test";
+            TestEnvironment.ProjectIdentifier1 = "testprojekt";
+            TestEnvironment.ProjectIdentifier2 = "d27f27bf-e2e9-47c6-b87f-a93fe31dec32";
         }
 
         
