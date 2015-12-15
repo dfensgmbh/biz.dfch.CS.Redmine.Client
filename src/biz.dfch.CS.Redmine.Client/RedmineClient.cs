@@ -682,6 +682,86 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Issues
 
+        #region Attachments
+
+        /// <summary>
+        /// Gets the attachments of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <returns>The attachments of the issues</returns>
+        public IList<Attachment> GetAttachments(int issueId)
+        {
+            return this.GetAttachments(issueId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the attachments of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The attachments of the issues</returns>
+        public IList<Attachment> GetAttachments(int issueId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetAttachements({0}, {1}, {2})", issueId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<Attachment> attachments = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = new RedmineManager("http://192.168.99.1:10080/redmine", "niklaus", "hdr3DWdK", MimeFormat.json);
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add("include", "attachments");
+                Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
+                return issue.Attachments;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return attachments;
+        }
+
+        /// <summary>
+        /// Gets an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <returns>The specified attachment</returns>
+        public Attachment GetAttachment(int id)
+        {
+            return this.GetAttachment(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The specified attachment</returns>
+        public Attachment GetAttachment(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No attachment id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetAttachment({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            Attachment attachment = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.GetObject<Attachment>(id.ToString(), new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return attachment;
+        }
+
+        #endregion Attachements
+
         #region Load Items Selections
 
         /// <summary>
