@@ -60,7 +60,7 @@
     <Compile Include="TestEnvironment.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\biz.dfch.CS.Redmine.Client\biz.dfch.CS.Redmine.Client.csproj">
+    <ProjectReference Include="..\biz.dfch.CS.Redmine.Client\biz.dfch.CS.Redmine.Client.csproj">
       <Project>{6051fbfe-9b93-4737-b71c-b240ec4b3330}</Project>
       <Name>biz.dfch.CS.Redmine.Client</Name>
     </ProjectReference>

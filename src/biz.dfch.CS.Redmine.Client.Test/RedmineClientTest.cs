@@ -39,7 +39,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.Equals("User could not be authorized"));
+                Assert.IsTrue(ex.Message.Contains("Bad domain name"));
             }
         }
 

@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "biz.dfch.CS.Redmine.Client", "biz.dfch.CS.Redmine.Client\biz.dfch.CS.Redmine.Client.csproj", "{6051FBFE-9B93-4737-B71C-B240EC4B3330}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "biz.dfch.CS.Redmine.Client.Test", "..\biz.dfch.CS.Redmine.Client.Test\biz.dfch.CS.Redmine.Client.Test.csproj", "{AFFC11B1-2175-4020-AAD8-63F2E35D4B39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "biz.dfch.CS.Redmine.Client.Test", "biz.dfch.CS.Redmine.Client.Test\biz.dfch.CS.Redmine.Client.Test.csproj", "{AFFC11B1-2175-4020-AAD8-63F2E35D4B39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
