@@ -487,6 +487,44 @@ namespace biz.dfch.CS.Redmine.Client
         }
 
         /// <summary>
+        /// Deletes an issue
+        /// </summary>
+        /// <param name="id">The id of the issue</param>
+        /// <returns>True if the issue could be deleted</returns>
+        public bool DeleteIssue(int id)
+        {
+            return this.DeleteIssue(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Deletes an issue
+        /// </summary>
+        /// <param name="id">The id of the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>True if the issue could be deleted</returns>
+        public bool DeleteIssue(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No issue id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.DeleteIssue({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.DeleteObject<Issue>(id.ToString(), new NameValueCollection());
+                return true;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
+        }
+
+        /// <summary>
         /// Sets the data in the issue according to the meta data object provided
         /// </summary>
         /// <param name="issueData">The meta data to set in the issue</param>

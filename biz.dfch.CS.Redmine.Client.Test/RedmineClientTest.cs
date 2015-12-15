@@ -329,7 +329,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
             //Assert.AreEqual(metaData.ProjectIdentifier, createdIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
 
-           // redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds); // Delete Issue
+            redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds); 
         }
 
         [TestMethod]
@@ -343,7 +343,41 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void DeleteIssue()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue issue = new Issue()
+            {
+                Subject = "Created via API",
+                Description = "This issue was created via API",
+                DueDate = DateTime.Now.AddDays(3),
+            };
+            IssueMetaData metaData = new IssueMetaData()
+            {
+                AssignedToLogin = TestEnvironment.UserLogin2,
+                AuthorLogin = TestEnvironment.UserLogin1,
+                PriorityName = "High",
+                TrackerName = "Feature",
+                StateName = "New",
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier,
+            };
+            Issue createdIssue = redmineClient.CreateIssue(issue, metaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue loadedIssue = redmineClient.GetIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedIssue, "Issue was not created correctly");
+
+            bool success = redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                Issue loadedIssueAfterDeletion = redmineClient.GetIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         #endregion Issues
