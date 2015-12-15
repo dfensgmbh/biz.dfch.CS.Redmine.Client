@@ -487,6 +487,73 @@ namespace biz.dfch.CS.Redmine.Client
         }
 
         /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue)
+        {
+            return this.UpdateIssue(issue, null);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            return this.UpdateIssue(issue, null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, IssueMetaData issueData)
+        {
+            return this.UpdateIssue(issue, issueData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, IssueMetaData issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != issue, "No issue defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.CreateIssue({0}, {1}, {2})", issue.Subject, totalAttempts, baseRetryIntervallMilliseconds));
+
+            this.SetIssueMetaData(issueData, issue, totalAttempts, baseRetryIntervallMilliseconds);
+            Issue createdIssue = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.UpdateObject(issue.Id.ToString(), issue);
+                return this.GetIssue(issue.Id, totalAttempts, baseRetryIntervallMilliseconds);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return createdIssue;
+        }
+
+        /// <summary>
         /// Deletes an issue
         /// </summary>
         /// <param name="id">The id of the issue</param>
