@@ -713,7 +713,7 @@ namespace biz.dfch.CS.Redmine.Client
 
             IList<Attachment> attachments = RedmineClient.InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = new RedmineManager("http://192.168.99.1:10080/redmine", "niklaus", "hdr3DWdK", MimeFormat.json);
+                RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add("include", "attachments");
                 Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
