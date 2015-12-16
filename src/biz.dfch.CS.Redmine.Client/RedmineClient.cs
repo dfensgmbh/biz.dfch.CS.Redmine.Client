@@ -760,6 +760,67 @@ namespace biz.dfch.CS.Redmine.Client
             return attachment;
         }
 
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, AttachmentData attachmentData)
+        {
+            return this.CreateAttachment(issueId, attachmentData);
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, AttachmentData attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No issue id defined");
+            Contract.Requires(null != attachmentData, "No attachmentData defined");
+            Contract.Requires(null != attachmentData.Content, "No attachment content defined");
+            Contract.Requires(attachmentData.Content.Length > 0, "Attachment content is empty");
+            Contract.Requires(!string.IsNullOrEmpty(attachmentData.FileName), "No file name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Upload uploadedFile = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    return redmineManager.UploadFile(attachmentData.Content);
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
+
+            issue.Uploads = new List<Upload>()
+            {
+                new Upload()
+                {
+                     ContentType = attachmentData.ContentType,
+                     Description = attachmentData.Description,
+                     FileName = attachmentData.FileName,
+                     Token = uploadedFile.Token,                      
+                }
+            };
+
+            Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
+            IList<Attachment> attachments = this.GetAttachments(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
+
+            //unfortunately we do not have the ID of the attachment, and the file name is not unique. So we load the latest file attached to the specified issue with the specified name.
+            Attachment createdAttachment = attachments.OrderByDescending(a=> a.Id)
+                .FirstOrDefault(a => a.FileName == attachmentData.FileName);
+
+            return createdAttachment;
+        }
+
         #endregion Attachements
 
         #region Load Items Selections

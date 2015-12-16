@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
@@ -496,7 +497,23 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void CreateAttachment()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            AttachmentData attachmentData = new AttachmentData()
+            {
+                Content = File.ReadAllBytes(TestEnvironment.AttachmentFilePath),
+                ContentType = "text/plain",
+                FileName = "APIUpload.txt",
+                Description = "Uploadet via API",
+            };
+
+            Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdAttachment, "No attachment received");
+            Assert.AreEqual(attachmentData.Description, createdAttachment.Description, "Description was not set correctly");
+            Assert.AreEqual(attachmentData.FileName, createdAttachment.FileName, "File name was not set correctly");
+            Assert.AreEqual(attachmentData.ContentType, createdAttachment.ContentType, "Content type was not set correctly");
         }
 
         [TestMethod]
