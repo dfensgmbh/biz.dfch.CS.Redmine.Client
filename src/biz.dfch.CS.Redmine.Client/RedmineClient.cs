@@ -815,10 +815,46 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Attachment> attachments = this.GetAttachments(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
 
             //unfortunately we do not have the ID of the attachment, and the file name is not unique. So we load the latest file attached to the specified issue with the specified name.
-            Attachment createdAttachment = attachments.OrderByDescending(a=> a.Id)
+            Attachment createdAttachment = attachments.OrderByDescending(a => a.Id)
                 .FirstOrDefault(a => a.FileName == attachmentData.FileName);
 
             return createdAttachment;
+        }
+
+        /// <summary>
+        /// Deletes an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <returns>True if the attachment could be deleted</returns>
+        public bool DeleteAttachment(int id)
+        {
+            return this.DeleteAttachment(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Deletes an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <returns>True if the attachment could be deleted</returns>
+        public bool DeleteAttachment(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No attachment id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    redmineManager.DeleteObject<Attachment>(id.ToString(), new NameValueCollection());
+                    return true;
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
         }
 
         #endregion Attachements

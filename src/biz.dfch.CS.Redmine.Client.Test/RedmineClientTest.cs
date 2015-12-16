@@ -527,7 +527,34 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void DeleteAttachment()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            AttachmentData attachmentData = new AttachmentData()
+            {
+                Content = File.ReadAllBytes(TestEnvironment.AttachmentFilePath),
+                ContentType = "text/plain",
+                FileName = "APIUpload.txt",
+                Description = "Uploadet via API",
+            };
+
+            Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Attachment loadedAttachment = redmineClient.GetAttachment(createdAttachment.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedAttachment, "Attachment was not created correctly");
+
+            bool success = redmineClient.DeleteAttachment(createdAttachment.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                Attachment loadedAttachmentAfterDeletion = redmineClient.GetAttachment(createdAttachment.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         #endregion Attachments
