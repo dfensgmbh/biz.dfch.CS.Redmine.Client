@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
@@ -330,7 +331,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
             //Assert.AreEqual(metaData.ProjectIdentifier, createdIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
 
-            redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds); 
+            redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]
@@ -435,51 +436,84 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetAttachementList()
+        public void GetAttachmentList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Attachment> attachements = redmineClient.GetAttachments(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(attachements, "No attachements received");
+            Assert.IsTrue(attachements.Count > 0, "Attachement list is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetAttachementListInvalidIssueId()
+        public void GetAttachmentListInvalidIssueId()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                IList<Attachment> attachements = redmineClient.GetAttachments(int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetAttachement()
+        public void GetAttachment()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Attachment attachment = redmineClient.GetAttachment(TestEnvironment.AttachmentId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(attachment, "No attachment received");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetAttachementInvalidId()
+        public void GetAttachmentInvalidId()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Attachment attachment = redmineClient.GetAttachment(int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void CreateAttachement()
+        public void CreateAttachment()
         {
-            Assert.IsTrue(false, "Not yet implemented");
-        }
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void UpdateAttachement()
-        {
-            Assert.IsTrue(false, "Not yet implemented");
-        }
+            AttachmentData attachmentData = new AttachmentData()
+            {
+                Content = File.ReadAllBytes(TestEnvironment.AttachmentFilePath),
+                ContentType = "text/plain",
+                FileName = "APIUpload.txt",
+                Description = "Uploadet via API",
+            };
 
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void DeleteAttachement()
-        {
-            Assert.IsTrue(false, "Not yet implemented");
+            Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdAttachment, "No attachment received");
+            Assert.AreEqual(attachmentData.Description, createdAttachment.Description, "Description was not set correctly");
+            Assert.AreEqual(attachmentData.FileName, createdAttachment.FileName, "File name was not set correctly");
+            Assert.AreEqual(attachmentData.ContentType, createdAttachment.ContentType, "Content type was not set correctly");
         }
 
         #endregion Attachments

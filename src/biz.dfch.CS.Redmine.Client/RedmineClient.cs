@@ -682,6 +682,147 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Issues
 
+        #region Attachments
+
+        /// <summary>
+        /// Gets the attachments of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <returns>The attachments of the issues</returns>
+        public IList<Attachment> GetAttachments(int issueId)
+        {
+            return this.GetAttachments(issueId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the attachments of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The attachments of the issues</returns>
+        public IList<Attachment> GetAttachments(int issueId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetAttachements({0}, {1}, {2})", issueId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<Attachment> attachments = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add("include", "attachments");
+                Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
+                return issue.Attachments;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return attachments;
+        }
+
+        /// <summary>
+        /// Gets an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <returns>The specified attachment</returns>
+        public Attachment GetAttachment(int id)
+        {
+            return this.GetAttachment(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets an attachment
+        /// </summary>
+        /// <param name="id">The id of the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The specified attachment</returns>
+        public Attachment GetAttachment(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No attachment id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetAttachment({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
+
+            Attachment attachment = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.GetObject<Attachment>(id.ToString(), new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, AttachmentData attachmentData)
+        {
+            return this.CreateAttachment(issueId, attachmentData);
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, AttachmentData attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No issue id defined");
+            Contract.Requires(null != attachmentData, "No attachmentData defined");
+            Contract.Requires(null != attachmentData.Content, "No attachment content defined");
+            Contract.Requires(attachmentData.Content.Length > 0, "Attachment content is empty");
+            Contract.Requires(!string.IsNullOrEmpty(attachmentData.FileName), "No file name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Upload uploadedFile = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    return redmineManager.UploadFile(attachmentData.Content);
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
+
+            issue.Uploads = new List<Upload>()
+            {
+                new Upload()
+                {
+                     ContentType = attachmentData.ContentType,
+                     Description = attachmentData.Description,
+                     FileName = attachmentData.FileName,
+                     Token = uploadedFile.Token,                      
+                }
+            };
+
+            Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
+            IList<Attachment> attachments = this.GetAttachments(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
+
+            //unfortunately we do not have the ID of the attachment, and the file name is not unique. So we load the latest file attached to the specified issue with the specified name.
+            Attachment createdAttachment = attachments.OrderByDescending(a => a.Id)
+                .FirstOrDefault(a => a.FileName == attachmentData.FileName);
+
+            return createdAttachment;
+        }
+
+        #endregion Attachements
+
         #region Load Items Selections
 
         /// <summary>
