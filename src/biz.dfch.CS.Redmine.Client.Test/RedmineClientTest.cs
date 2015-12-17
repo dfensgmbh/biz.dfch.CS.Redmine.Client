@@ -113,14 +113,25 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectByIdentifier()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(project, "No user received");
+            Assert.AreEqual(TestEnvironment.ProjectIdentifier1, project.Identifier, "Wrong priority returned");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetProjectInvalidIdentifier()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(project, "Project found with invalid identifier");
         }
 
         [TestMethod]
@@ -324,12 +335,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(issue.Description, createdIssue.Description, "Description was not set correctly");
             Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
 
-            //Assert.AreEqual(metaData.AuthorLogin, createdIssue.Author.Name, "Author was not set correctly"); //Compare user name -> Implement GetUserByLogin
-            //Assert.AreEqual(metaData.AssignedToLogin, createdIssue.AssignedTo.Name, "AssignedTo was not set correctly"); //Compare user name -> Implement GetUserByLogin
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly"); 
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
             Assert.AreEqual(metaData.PriorityName, createdIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
-            //Assert.AreEqual(metaData.ProjectIdentifier, createdIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(metaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -364,7 +375,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData updateMetaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin1,
-                AuthorLogin = TestEnvironment.UserLogin2,
+                AuthorLogin = TestEnvironment.UserLogin1, // Author can not be changed
                 PriorityName = "Urgent",
                 TrackerName = "Bug",
                 StateName = "In Progress",
@@ -379,12 +390,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(createdIssue.Description, updatedIssue.Description, "Description was not set correctly");
             Assert.AreEqual(createdIssue.DueDate, updatedIssue.DueDate, "DueDate was not set correctly");
 
-            //Assert.AreEqual(updateMetaData.AuthorLogin, updatedIssue.Author.Name, "Author was not set correctly"); //Compare user name -> Implement GetUserByLogin
-            //Assert.AreEqual(updateMetaData.AssignedToLogin, updatedIssue.AssignedTo.Name, "AssignedTo was not set correctly"); //Compare user name -> Implement GetUserByLogin
+            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.Author.Id, "Author was not set correctly");
+            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
             Assert.AreEqual(updateMetaData.PriorityName, updatedIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(updateMetaData.TrackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(updateMetaData.StateName, updatedIssue.Status.Name, "Status was not set correctly");
-            //Assert.AreEqual(updateMetaData.ProjectIdentifier, updatedIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(updateMetaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -522,44 +533,161 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetStateValueList()
+        public void GetIssueStateList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<IssueStatus> states = redmineClient.GetIssueStates(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(states, "No states received");
+            Assert.IsTrue(states.Count > 0, "List of states is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetStateValueByName()
+        public void GetIssueStateByName()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            string stateName = "In Progress";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(state, "No state received");
+            Assert.AreEqual(stateName, state.Name, "Wrong state returned");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetPriorityValueList()
+        public void GetIssueStateInvalidName()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            string stateName = "NotAState";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(state, "State found with invalid name");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetPriorityValueName()
+        public void GetIssuePriorityList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<IssuePriority> priorities = redmineClient.GetIssuePriorities(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(priorities, "No priorities received");
+            Assert.IsTrue(priorities.Count > 0, "List of priorities is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssuePriorityByName()
+        {
+            string priorityName = "Urgent";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(priority, "No priority received");
+            Assert.AreEqual(priorityName, priority.Name, "Wrong priority returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssuePriorityInvalidName()
+        {
+            string priorityName = "NotAPriority";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(priority, "Priority found with invalid name");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetUserList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<User> users = redmineClient.GetUsers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(users, "No users received");
+            Assert.IsTrue(users.Count > 0, "List of users is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetUserByLogin()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(user, "No user received");
+            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong priority returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUserInvalidLogin()
+        {
+            string login = "NotAUser";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(user, "User found with invalid login");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetTrackerList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Tracker> trackers = redmineClient.GetTrackers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(trackers, "No trackers received");
+            Assert.IsTrue(trackers.Count > 0, "List of trackers is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetTrackerByName()
+        {
+            string trackerName = "Bug";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(tracker, "No tracker received");
+            Assert.AreEqual(trackerName, tracker.Name, "Wrong priority returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetTrackerInvalidName()
+        {
+            string trackerName = "NotATracker";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(tracker, "Tracker found with invalid name");
         }
 
         #endregion Load Items Source Objects

@@ -226,6 +226,39 @@ namespace biz.dfch.CS.Redmine.Client
         }
 
         /// <summary>
+        /// Get a project by identifier
+        /// </summary>
+        /// <param name="identifier">Identifier of the project</param>
+        /// <returns>The project specified by the identifier or null if there is no project with the specified identifier</returns>
+        public Project GetProjectByIdentifier(string identifier)
+        {
+            return this.GetProjectByIdentifier(identifier, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Get a project by identifier
+        /// </summary>
+        /// <param name="identifier">Identifier of the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The project specified by the identifier or null if there is no project with the specified identifier</returns>
+        public Project GetProjectByIdentifier(string identifier, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(identifier), "No project identifier defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetProjectByIdentifier({0}, {1}, {2})", identifier, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<Project> projects = this.GetProjects(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return projects.FirstOrDefault(p=>p.Identifier==identifier);
+        }
+
+        /// <summary>
         /// Creates a new project
         /// </summary>
         /// <param name="project">The project to create</param>
@@ -828,10 +861,19 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads issues states
         /// </summary>
+        /// <returns>Return the list of issues states</returns>
+        public IList<IssueStatus> GetIssueStates()
+        {
+            return this.GetIssueStates(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads issues states
+        /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues states</returns>
-        private IList<IssueStatus> GetIssueStates(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<IssueStatus> GetIssueStates(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -851,12 +893,54 @@ namespace biz.dfch.CS.Redmine.Client
         }
 
         /// <summary>
+        /// Gets a issue state object by the state name
+        /// </summary>
+        /// <param name="name">The name of the state</param>
+        /// <returns>The state with the specified name or null if there is no state with the specified name</returns>
+        public IssueStatus GetIssueStateByName(string name)
+        {
+            return this.GetIssueStateByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a issue state object by the state name
+        /// </summary>
+        /// <param name="name">The name of the state</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The state with the specified name or null if there is no state with the specified name</returns>
+        public IssueStatus GetIssueStateByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(name), "No state name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetIssueStateByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<IssueStatus> states = this.GetIssueStates(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return states.FirstOrDefault(s => s.Name == name);
+        }
+
+        /// <summary>
+        /// Loads issues priorities
+        /// </summary>
+        /// <returns>Return the list of issues priorities</returns>
+        public IList<IssuePriority> GetIssuePriorities()
+        {
+            return this.GetIssuePriorities(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
         /// Loads issues priorities
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues priorities</returns>
-        private IList<IssuePriority> GetIssuePriorities(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<IssuePriority> GetIssuePriorities(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -875,13 +959,55 @@ namespace biz.dfch.CS.Redmine.Client
             return priorities;
         }
 
+         /// <summary>
+        /// Gets a issue priority object by the priority name
+        /// </summary>
+        /// <param name="name">The name of the priority</param>
+        /// <returns>The priority with the specified name or null if there is no priority with the specified name</returns>
+        public IssuePriority GetIssuePriorityByName(string name)
+        {
+            return this.GetIssuePriorityByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a issue priority object by the priority name
+        /// </summary>
+        /// <param name="name">The name of the priority</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The priority with the specified name or null if there is no priority with the specified name</returns>
+        public IssuePriority GetIssuePriorityByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(name), "No priority name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorityByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
+            
+            IList<IssuePriority> priortities = this.GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return priortities.FirstOrDefault(s => s.Name == name);
+        }
+
+        /// <summary>
+        /// Loads list of users
+        /// </summary>
+       /// <returns>Return the list of users</returns>
+        public IList<User> GetUsers()
+        {
+            return this.GetUsers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
         /// <summary>
         /// Loads list of users
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of users</returns>
-        private IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -900,13 +1026,55 @@ namespace biz.dfch.CS.Redmine.Client
             return users;
         }
 
+         /// <summary>
+        /// Gets a user by login name
+        /// </summary>
+        /// <param name="login">The login of the user</param>
+        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
+        public User GetUserByLogin(string login)
+        {
+            return this.GetUserByLogin(login, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a user by login name
+        /// </summary>
+        /// <param name="login">The login of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
+        public User GetUserByLogin(string login, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(login), "No user login name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetUserByLogin({0}, {1}, {2})", login, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return users.FirstOrDefault(s => s.Login == login);
+        }
+
+        /// <summary>
+        /// Loads list of trackers (issue type)
+        /// </summary>
+        /// <returns>Return the list of trackers (issue type)</returns>
+        public IList<Tracker> GetTrackers()
+        {
+            return this.GetTrackers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
         /// <summary>
         /// Loads list of trackers (issue type)
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of trackers (issue type)</returns>
-        private IList<Tracker> GetTrackers(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<Tracker> GetTrackers(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -923,6 +1091,39 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return trackers;
+        }
+
+        /// <summary>
+        /// Gets a tracker (issue type) by name
+        /// </summary>
+        /// <param name="login">The name of the tracker</param>
+        /// <returns>The tracker with the specified name or null if there is no tracker with the specified name</returns>
+        public Tracker GetTrackerByName(string name)
+        {
+            return this.GetTrackerByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a tracker (issue type) by name
+        /// </summary>
+        /// <param name="login">The name of the tracker</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The tracker with the specified name or null if there is no tracker with the specified name</returns>
+        public Tracker GetTrackerByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(name), "No tracker name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetTrackerByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<Tracker> trackers = this.GetTrackers(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return trackers.FirstOrDefault(s => s.Name == name);
         }
 
         #endregion Load Items Selections
