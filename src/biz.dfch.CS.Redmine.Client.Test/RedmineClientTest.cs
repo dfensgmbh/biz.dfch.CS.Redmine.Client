@@ -516,13 +516,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(attachmentData.ContentType, createdAttachment.ContentType, "Content type was not set correctly");
         }
 
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void UpdateAttachment()
-        {
-            Assert.IsTrue(false, "Not yet implemented");
-        }
-
         #endregion Attachments
 
         #region Load Items Source Objects

@@ -821,16 +821,6 @@ namespace biz.dfch.CS.Redmine.Client
             return createdAttachment;
         }
 
-        /// <summary>
-        /// Deletes an attachment
-        /// </summary>
-        /// <param name="id">The id of the attachment</param>
-        /// <returns>True if the attachment could be deleted</returns>
-        public bool DeleteAttachment(int id)
-        {
-            return this.DeleteAttachment(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
-        }
-
         #endregion Attachements
 
         #region Load Items Selections
