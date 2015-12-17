@@ -335,12 +335,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(issue.Description, createdIssue.Description, "Description was not set correctly");
             Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
 
-            //Assert.AreEqual(metaData.AuthorLogin, createdIssue.Author.Name, "Author was not set correctly"); //Compare user name -> Implement GetUserByLogin
-            //Assert.AreEqual(metaData.AssignedToLogin, createdIssue.AssignedTo.Name, "AssignedTo was not set correctly"); //Compare user name -> Implement GetUserByLogin
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly"); 
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
             Assert.AreEqual(metaData.PriorityName, createdIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
-            //Assert.AreEqual(metaData.ProjectIdentifier, createdIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(metaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -375,7 +375,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData updateMetaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin1,
-                AuthorLogin = TestEnvironment.UserLogin2,
+                AuthorLogin = TestEnvironment.UserLogin1, // Author can not be changed
                 PriorityName = "Urgent",
                 TrackerName = "Bug",
                 StateName = "In Progress",
@@ -390,12 +390,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(createdIssue.Description, updatedIssue.Description, "Description was not set correctly");
             Assert.AreEqual(createdIssue.DueDate, updatedIssue.DueDate, "DueDate was not set correctly");
 
-            //Assert.AreEqual(updateMetaData.AuthorLogin, updatedIssue.Author.Name, "Author was not set correctly"); //Compare user name -> Implement GetUserByLogin
-            //Assert.AreEqual(updateMetaData.AssignedToLogin, updatedIssue.AssignedTo.Name, "AssignedTo was not set correctly"); //Compare user name -> Implement GetUserByLogin
+            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.Author.Id, "Author was not set correctly");
+            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
             Assert.AreEqual(updateMetaData.PriorityName, updatedIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(updateMetaData.TrackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(updateMetaData.StateName, updatedIssue.Status.Name, "Status was not set correctly");
-            //Assert.AreEqual(updateMetaData.ProjectIdentifier, updatedIssue.Project.Name, "Project was not set correctly"); //Compare project name -> Implement GetProjectByIdentifier
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(updateMetaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
