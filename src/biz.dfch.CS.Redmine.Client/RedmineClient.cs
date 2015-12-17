@@ -229,6 +229,16 @@ namespace biz.dfch.CS.Redmine.Client
         /// Get a project by identifier
         /// </summary>
         /// <param name="identifier">Identifier of the project</param>
+        /// <returns>The project specified by the identifier or null if there is no project with the specified identifier</returns>
+        public Project GetProjectByIdentifier(string identifier)
+        {
+            return this.GetProjectByIdentifier(identifier, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Get a project by identifier
+        /// </summary>
+        /// <param name="identifier">Identifier of the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The project specified by the identifier or null if there is no project with the specified identifier</returns>
@@ -851,6 +861,15 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads issues states
         /// </summary>
+        /// <returns>Return the list of issues states</returns>
+        public IList<IssueStatus> GetIssueStates()
+        {
+            return this.GetIssueStates(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads issues states
+        /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues states</returns>
@@ -871,6 +890,16 @@ namespace biz.dfch.CS.Redmine.Client
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return states;
+        }
+
+        /// <summary>
+        /// Gets a issue state object by the state name
+        /// </summary>
+        /// <param name="name">The name of the state</param>
+        /// <returns>The state with the specified name or null if there is no state with the specified name</returns>
+        public IssueStatus GetIssueStateByName(string name)
+        {
+            return this.GetIssueStateByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -899,6 +928,15 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads issues priorities
         /// </summary>
+        /// <returns>Return the list of issues priorities</returns>
+        public IList<IssuePriority> GetIssuePriorities()
+        {
+            return this.GetIssuePriorities(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads issues priorities
+        /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues priorities</returns>
@@ -919,6 +957,16 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return priorities;
+        }
+
+         /// <summary>
+        /// Gets a issue priority object by the priority name
+        /// </summary>
+        /// <param name="name">The name of the priority</param>
+        /// <returns>The priority with the specified name or null if there is no priority with the specified name</returns>
+        public IssuePriority GetIssuePriorityByName(string name)
+        {
+            return this.GetIssuePriorityByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -947,6 +995,15 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads list of users
         /// </summary>
+       /// <returns>Return the list of users</returns>
+        public IList<User> GetUsers()
+        {
+            return this.GetUsers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads list of users
+        /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of users</returns>
@@ -967,6 +1024,16 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return users;
+        }
+
+         /// <summary>
+        /// Gets a user by login name
+        /// </summary>
+        /// <param name="login">The login of the user</param>
+        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
+        public User GetUserByLogin(string login)
+        {
+            return this.GetUserByLogin(login, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -995,6 +1062,15 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads list of trackers (issue type)
         /// </summary>
+        /// <returns>Return the list of trackers (issue type)</returns>
+        public IList<Tracker> GetTrackers()
+        {
+            return this.GetTrackers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads list of trackers (issue type)
+        /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of trackers (issue type)</returns>
@@ -1015,6 +1091,16 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return trackers;
+        }
+
+        /// <summary>
+        /// Gets a tracker (issue type) by name
+        /// </summary>
+        /// <param name="login">The name of the tracker</param>
+        /// <returns>The tracker with the specified name or null if there is no tracker with the specified name</returns>
+        public Tracker GetTrackerByName(string name)
+        {
+            return this.GetTrackerByName(name, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
