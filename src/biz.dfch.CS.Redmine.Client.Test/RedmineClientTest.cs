@@ -317,6 +317,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 Subject = "Created via API",
                 Description = "This issue was created via API",
                 DueDate = DateTime.Today.AddDays(3),
+                IsPrivate = true,
             };
             IssueMetaData metaData = new IssueMetaData()
             {
@@ -334,6 +335,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(issue.Subject, createdIssue.Subject, "Subject was not set correctly");
             Assert.AreEqual(issue.Description, createdIssue.Description, "Description was not set correctly");
             Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
+            Assert.AreEqual(issue.IsPrivate, createdIssue.IsPrivate, "IsPrivate was not set correctly");
 
             Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly"); 
             Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
@@ -372,6 +374,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             createdIssue.Description = "This issue was updated via API";
             createdIssue.Subject = "Update Issue";
             createdIssue.DueDate = DateTime.Today.AddDays(5);
+            createdIssue.IsPrivate = true;
             IssueMetaData updateMetaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin1,
@@ -389,6 +392,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(createdIssue.Subject, updatedIssue.Subject, "Subject was not set correctly");
             Assert.AreEqual(createdIssue.Description, updatedIssue.Description, "Description was not set correctly");
             Assert.AreEqual(createdIssue.DueDate, updatedIssue.DueDate, "DueDate was not set correctly");
+            Assert.AreEqual(createdIssue.IsPrivate, updatedIssue.IsPrivate, "IsPrivate was not set correctly");
 
             Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.Author.Id, "Author was not set correctly");
             Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
