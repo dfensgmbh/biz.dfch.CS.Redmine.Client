@@ -22,7 +22,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void LoginCorrectCredentials()
         {
             RedmineClient redmineClient = new RedmineClient();
-            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            bool success = redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsTrue(success, "Could not log in.");
         }
@@ -35,7 +35,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             try
             {
-                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                bool success = redmineClient.Login("http://notAServer:8080/redmine", TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
                 Assert.IsTrue(false, "Should throw an exception and never reach this line");
             }
             catch (Exception ex)
@@ -52,7 +52,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             try
             {
-                bool success = redmineClient.Login(TestEnvironment.RedminUrl, "NotAnApiKey", 3, 100);
+                bool success = redmineClient.Login(TestEnvironment.RedminUrl, "NotAUser", TestEnvironment.RedminePassword, 3, 100);
                 Assert.IsTrue(false, "Should throw an exception and never reach this line");
             }
             catch (Exception ex)
@@ -71,7 +71,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetProjectList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<Project> projects = redmineClient.GetProjects(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -84,7 +84,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetProject()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = redmineClient.GetProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -96,7 +96,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetProjectInvalidId()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             try
             {
@@ -114,7 +114,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetProjectByIdentifier()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -127,7 +127,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetProjectInvalidIdentifier()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -139,7 +139,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void CreateProject()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = new Project()
             {
@@ -165,7 +165,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void UpdateProject()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = new Project()
             {
@@ -195,7 +195,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void DeleteProject()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project project = new Project()
             {
@@ -232,7 +232,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssueList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<Issue> issues = redmineClient.GetIssues(null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -245,7 +245,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssueListOfProject()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<Issue> issues = redmineClient.GetIssues(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -262,7 +262,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssueListInvalidProjectId()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             try
             {
@@ -280,7 +280,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssue()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Issue issue = redmineClient.GetIssue(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -292,7 +292,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssueInvalidId()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             try
             {
@@ -310,7 +310,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void CreateIssue()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Issue issue = new Issue()
             {
@@ -350,7 +350,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void UpdateIssue()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Issue issue = new Issue()
             {
@@ -405,7 +405,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void DeleteIssue()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Issue issue = new Issue()
             {
@@ -450,7 +450,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetAttachmentList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<Attachment> attachements = redmineClient.GetAttachments(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -463,7 +463,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetAttachmentListInvalidIssueId()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             try
             {
@@ -480,7 +480,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetAttachment()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Attachment attachment = redmineClient.GetAttachment(TestEnvironment.AttachmentId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -492,7 +492,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetAttachmentInvalidId()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             try
             {
@@ -509,7 +509,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void CreateAttachment()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             AttachmentData attachmentData = new AttachmentData()
             {
@@ -536,7 +536,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssueStateList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<IssueStatus> states = redmineClient.GetIssueStates(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -550,7 +550,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string stateName = "In Progress";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -564,7 +564,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string stateName = "NotAState";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -576,7 +576,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetIssuePriorityList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<IssuePriority> priorities = redmineClient.GetIssuePriorities(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -590,7 +590,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string priorityName = "Urgent";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -604,7 +604,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string priorityName = "NotAPriority";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -616,7 +616,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetUserList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<User> users = redmineClient.GetUsers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -629,7 +629,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetUserByLogin()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -643,7 +643,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string login = "NotAUser";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -655,7 +655,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public void GetTrackerList()
         {
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<Tracker> trackers = redmineClient.GetTrackers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -669,7 +669,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string trackerName = "Bug";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -683,7 +683,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             string trackerName = "NotATracker";
             RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 

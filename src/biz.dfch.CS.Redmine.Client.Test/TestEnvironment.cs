@@ -25,7 +25,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
     public static class TestEnvironment
     {
         public static string RedminUrl { get; set; }
-        public static string ApiKey { get; set; }
+        public static string RedmineLogin { get; set; }
+        public static string RedminePassword { get; set; }
         public static int TotalAttempts { get; set; }
         public static int BaseRetryIntervallMilliseconds { get; set; }
         public static int ProjectId { get; set; }
@@ -41,7 +42,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
         {
             //local
             TestEnvironment.RedminUrl = "http://192.168.99.1:10080/redmine";
-            TestEnvironment.ApiKey = "d28258aff3fb6117b49770a9ff1cd868cdfe7ac5";
+            TestEnvironment.RedmineLogin = "niklaus";
+            TestEnvironment.RedminePassword = "redmine$01";
             TestEnvironment.ProjectId = 5;
             TestEnvironment.IssueId = 1;
             TestEnvironment.UserLogin1 = "niklaus";
@@ -52,7 +54,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             //lab3
             //TestEnvironment.RedminUrl = "http://172.19.115.27";
-            //TestEnvironment.ApiKey = "1e1d5e8de8a9f3bc8bbc6b0bec2a9fdd30786dc3";
+            //TestEnvironment.RedmineLogin = "tgdkuni7";
+            //TestEnvironment.RedminePassword = "redmine$01";
             //TestEnvironment.ProjectId = 1;
             //TestEnvironment.IssueId = 1;
             //TestEnvironment.UserLogin1 = "tgdkuni7";

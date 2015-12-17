@@ -59,9 +59,13 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         public string RedmineUrl { get; set; }
         /// <summary>
-        /// Authencation key for the redmine API
+        /// The user name for authentication
         /// </summary>
-        public string ApiKey { get; set; }
+        public string Username { get; set; }
+        /// <summary>
+        /// The password for authentication
+        /// </summary>
+        public string Password { get; set; }
         /// <summary>
         /// True if the the user could succsefully be authorized on the server
         /// </summary>
@@ -88,38 +92,41 @@ namespace biz.dfch.CS.Redmine.Client
         ///  Checks if the user can be authorized on the server
         /// </summary>
         /// <param name="redmineUrl">Url of the redmine api</param>
-        /// <param name="apiKey">Key for the redmine api</param>
+        /// <param name="username">The user name for authentication</param>
+        /// <param name="password">The password for authentication</param>
         /// <returns>True if the user could be authorized on the server</returns>
-        public bool Login(string redmineUrl, string apiKey)
+        public bool Login(string redmineUrl, string username, string password)
         {
-            return this.Login(redmineUrl, apiKey, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.Login(redmineUrl, username, password, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
         ///  Checks if the user can be authorized on the server
         /// </summary>
         /// <param name="redmineUrl">Url of the redmine api</param>
-        /// <param name="apiKey">Key for the redmine api</param>
+        /// <param name="username">The user name for authentication</param>
+        /// <param name="password">The password for authentication</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>True if the user could be authorized on the server</returns>
-        public bool Login(string redmineUrl, string apiKey, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public bool Login(string redmineUrl, string username, string password, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(!string.IsNullOrEmpty(redmineUrl), "No redmine url defined");
-            Contract.Requires(!string.IsNullOrEmpty(apiKey), "No api key defined");
+            Contract.Requires(!string.IsNullOrEmpty(username), "No username defined");
+            Contract.Requires(!string.IsNullOrEmpty(password), "No password defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.Login({0}, {1}, {2}, {3})", redmineUrl, apiKey, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.Login({0}, {1}, {2}, {3}, {4})", redmineUrl, username, password, totalAttempts, baseRetryIntervallMilliseconds));
 
             this.Logout(); // Ensure old login info is removed
 
             this.IsLoggedIn = RedmineClient.InvokeWithRetries(() =>
                 {
                     //Test if the credentials are valid
-                    RedmineManager redmineManager = this.GetRedmineManager(redmineUrl, apiKey);
+                    RedmineManager redmineManager = this.GetRedmineManager(redmineUrl, username, password);
                     IList<Project> projects = redmineManager.GetObjectList<Project>(new NameValueCollection());
 
                     //if there is no error the credentials are valid
@@ -129,7 +136,8 @@ namespace biz.dfch.CS.Redmine.Client
             if (this.IsLoggedIn)
             {
                 this.RedmineUrl = redmineUrl;
-                this.ApiKey = apiKey;
+                this.Username = username;
+                this.Password = password;
             }
             else
             {
@@ -145,7 +153,8 @@ namespace biz.dfch.CS.Redmine.Client
         public void Logout()
         {
             Trace.WriteLine(string.Format("RedmineClient.Logout()"));
-            this.ApiKey = null;
+            this.Username = null;
+            this.Password = null;
             this.RedmineUrl = null;
             this.IsLoggedIn = false;
         }
@@ -1136,18 +1145,19 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>A new redmine manager</returns>
         private RedmineManager GetRedmineManager()
         {
-            return this.GetRedmineManager(this.RedmineUrl, this.ApiKey);
+            return this.GetRedmineManager(this.RedmineUrl, this.Username, this.Password);
         }
 
         /// <summary>
         /// Create a redmine manager
         /// </summary>
         /// <param name="redmineUrl">Url of the redmine API</param>
-        /// <param name="apiKey">Key for the redmine API</param>
+        /// <param name="username">The user name for authentication</param>
+        /// <param name="password">The password for authentication</param>
         /// <returns>A new redmine manager</returns>
-        private RedmineManager GetRedmineManager(string redmineUrl, string apiKey)
+        private RedmineManager GetRedmineManager(string redmineUrl, string username, string password)
         {
-            return new RedmineManager(redmineUrl, apiKey, MimeFormat.json, false);
+            return new RedmineManager(redmineUrl, username, password, MimeFormat.json, false);
         }
 
         #endregion Redmine API Access
