@@ -522,28 +522,40 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetStateValueList()
+        public void GetIssueStateList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<IssueStatus> states = redmineClient.GetIssueStates(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(states, "No states received");
+            Assert.IsTrue(states.Count > 0, "List of states is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetStateByName()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetStateValueByName()
+        public void GetIssuePriorityList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<IssuePriority> priorities = redmineClient.GetIssuePriorities(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(priorities, "No priorities received");
+            Assert.IsTrue(priorities.Count>0, "List of priorities is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetPriorityValueList()
-        {
-            Assert.IsTrue(false, "Not yet implemented");
-        }
-
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void GetPriorityValueName()
+        public void GetPriorityByName()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }
@@ -552,12 +564,38 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetUserList()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<User> users = redmineClient.GetUsers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(users, "No users received");
+            Assert.IsTrue(users.Count > 0, "List of users is empty");
         }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void GetUserByLogin()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetTrackerList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.ApiKey, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Tracker> trackers = redmineClient.GetTrackers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(trackers, "No trackers received");
+            Assert.IsTrue(trackers.Count > 0, "List of trackers is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetTrackerByName()
         {
             Assert.IsTrue(false, "Not yet implemented");
         }

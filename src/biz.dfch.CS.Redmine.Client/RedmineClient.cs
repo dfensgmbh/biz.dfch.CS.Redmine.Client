@@ -831,7 +831,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues states</returns>
-        private IList<IssueStatus> GetIssueStates(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<IssueStatus> GetIssueStates(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -856,7 +856,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of issues priorities</returns>
-        private IList<IssuePriority> GetIssuePriorities(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<IssuePriority> GetIssuePriorities(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -881,7 +881,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of users</returns>
-        private IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -906,7 +906,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>Return the list of trackers (issue type)</returns>
-        private IList<Tracker> GetTrackers(int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<Tracker> GetTrackers(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
