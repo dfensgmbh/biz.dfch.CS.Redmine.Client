@@ -264,27 +264,29 @@ namespace biz.dfch.CS.Redmine.Client
 
             IList<Project> projects = this.GetProjects(totalAttempts, baseRetryIntervallMilliseconds);
 
-            return projects.FirstOrDefault(p=>p.Identifier==identifier);
+            return projects.FirstOrDefault(p => p.Identifier == identifier);
         }
 
         /// <summary>
         /// Creates a new project
         /// </summary>
         /// <param name="project">The project to create</param>
+        /// <param name="parentIdentifier">Identifier of the parent or null if the parent is specified in the project object or the project is a root project</param>
         /// <returns>The created project</returns>
-        public Project CreateProject(Project project)
+        public Project CreateProject(Project project, string parentIdentifier)
         {
-            return this.CreateProject(project, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.CreateProject(project, parentIdentifier, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
         /// Creates a new project
         /// </summary>
         /// <param name="project">The project to create</param>
+        /// <param name="parentIdentifier">Identifier of the parent or null if the parent is specified in the project object or the project is a root project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The created project</returns>
-        public Project CreateProject(Project project, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public Project CreateProject(Project project, string parentIdentifier, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -293,7 +295,14 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.CreateProject({0}, {1}, {2})", project.Name, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.CreateProject({0}, {1}, {2}, {3})", project.Name, parentIdentifier, totalAttempts, baseRetryIntervallMilliseconds));
+
+            if (!string.IsNullOrEmpty(parentIdentifier))
+            {
+                Project parent = this.GetProjectByIdentifier(parentIdentifier);
+                Contract.Assert(null != parent, string.Format("No project with identifier {0} found", parentIdentifier));
+                project.Parent = new IdentifiableName() { Id = parent.Id };
+            }
 
             Project createdProject = RedmineClient.InvokeWithRetries(() =>
                 {
@@ -309,19 +318,20 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="project">The new project data</param>
         /// <returns>The updated project</returns>
-        public Project UpdateProject(Project project)
+        public Project UpdateProject(Project project, string parentIdentifier)
         {
-            return this.UpdateProject(project, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.UpdateProject(project, parentIdentifier, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
         /// Updates a project
         /// </summary>
         /// <param name="project">The new project data</param>
+        /// <param name="parentIdentifier">Identifier of the parent or null if the parent is specified in the project object or the project is a root project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The updated project</returns>
-        public Project UpdateProject(Project project, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public Project UpdateProject(Project project, string parentIdentifier, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -330,7 +340,14 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.UpdateProject({0}, {1}, {2})", project.Name, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.UpdateProject({0}, {1}, {2},  {3})", project.Name, parentIdentifier, totalAttempts, baseRetryIntervallMilliseconds));
+
+            if (!string.IsNullOrEmpty(parentIdentifier))
+            {
+                Project parent = this.GetProjectByIdentifier(parentIdentifier);
+                Contract.Assert(null != parent, string.Format("No project with identifier {0} found", parentIdentifier));
+                project.Parent = new IdentifiableName() { Id = parent.Id };
+            }
 
             Project updatedProject = RedmineClient.InvokeWithRetries(() =>
                 {
@@ -968,7 +985,7 @@ namespace biz.dfch.CS.Redmine.Client
             return priorities;
         }
 
-         /// <summary>
+        /// <summary>
         /// Gets a issue priority object by the priority name
         /// </summary>
         /// <param name="name">The name of the priority</param>
@@ -995,7 +1012,7 @@ namespace biz.dfch.CS.Redmine.Client
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorityByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
-            
+
             IList<IssuePriority> priortities = this.GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
 
             return priortities.FirstOrDefault(s => s.Name == name);
@@ -1004,7 +1021,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads list of users
         /// </summary>
-       /// <returns>Return the list of users</returns>
+        /// <returns>Return the list of users</returns>
         public IList<User> GetUsers()
         {
             return this.GetUsers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
@@ -1035,7 +1052,7 @@ namespace biz.dfch.CS.Redmine.Client
             return users;
         }
 
-         /// <summary>
+        /// <summary>
         /// Gets a user by login name
         /// </summary>
         /// <param name="login">The login of the user</param>

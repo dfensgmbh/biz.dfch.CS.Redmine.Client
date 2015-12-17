@@ -148,7 +148,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 IsPublic = false,
                 Name = "Created via API",
             };
-            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Project createdProject = redmineClient.CreateProject(project, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(createdProject, "No project received");
             Assert.IsTrue(createdProject.Id > 0, "No Id defined in returned project");
@@ -156,6 +156,35 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(project.Identifier, createdProject.Identifier, "Identifier was not set correctly");
             Assert.AreEqual(project.IsPublic, createdProject.IsPublic, "IsPublic was not set correctly");
             Assert.AreEqual(project.Name, createdProject.Name, "Name was not set correctly");
+            Assert.IsNull(project.Parent, "Project was created as child project");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateChildProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This child project was created via API",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "Created via API",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdProject, "No project received");
+            Assert.IsTrue(createdProject.Id > 0, "No Id defined in returned project");
+            Assert.AreEqual(project.Description, createdProject.Description, "Description was not set correctly");
+            Assert.AreEqual(project.Identifier, createdProject.Identifier, "Identifier was not set correctly");
+            Assert.AreEqual(project.IsPublic, createdProject.IsPublic, "IsPublic was not set correctly");
+            Assert.AreEqual(project.Name, createdProject.Name, "Name was not set correctly");
+            Assert.IsNotNull(project.Parent, "No parent project received");
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdProject.Parent.Id, "Parent project was not set correctly");
 
             redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -174,18 +203,99 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 IsPublic = false,
                 Name = "To Update",
             };
-            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Project createdProject = redmineClient.CreateProject(project, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             createdProject.Description = "This project was updated via API";
             createdProject.Name = "Update Project";
             createdProject.IsPublic = true;
 
-            Project updatedProject = redmineClient.UpdateProject(createdProject, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Project updatedProject = redmineClient.UpdateProject(createdProject, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(updatedProject, "No project received");
             Assert.AreEqual(createdProject.Description, updatedProject.Description, "CreatedOn was not set correctly");
             Assert.AreEqual(createdProject.IsPublic, updatedProject.IsPublic, "CreatedOn was not set correctly");
             Assert.AreEqual(createdProject.Name, updatedProject.Name, "CreatedOn was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateProjectToChildProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project must be updated",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "To Update",
+            };
+            Project createdProject = redmineClient.CreateProject(project, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(createdProject.Parent, "Parent already defined before updating");
+
+            Project updatedProject = redmineClient.UpdateProject(createdProject, TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedProject, "No project received");
+            Assert.IsNotNull(updatedProject.Parent, "No parent project received");
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedProject.Parent.Id, "Parent project was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateProjectToRootProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project must be updated",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "To Update",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdProject.Parent, "Parent not defined before updating");
+            
+            Project updatedProject = redmineClient.UpdateProject(createdProject, TestEnvironment.ProjectIdentifier2, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedProject, "No project received");
+            Assert.IsNotNull(updatedProject.Parent, "No parent project received");
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier2, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedProject.Parent.Id, "Parent project was not set correctly");
+
+            redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateProjectChangeParent()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Project project = new Project()
+            {
+                Description = "This project must be updated",
+                Identifier = Guid.NewGuid().ToString(),
+                IsPublic = false,
+                Name = "To Update",
+            };
+            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdProject.Parent, "Parent not defined before updating");
+            createdProject.Parent = null;
+
+            Project updatedProject = redmineClient.UpdateProject(createdProject, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedProject, "No project received");
+            Assert.IsNull(updatedProject.Parent, "Parent not removed");
 
             redmineClient.DeleteProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -204,7 +314,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 IsPublic = false,
                 Name = "Created via API",
             };
-            Project createdProject = redmineClient.CreateProject(project, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Project createdProject = redmineClient.CreateProject(project, null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Project loadedProject = redmineClient.GetProject(createdProject.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
             Assert.IsNotNull(loadedProject, "Project was not created correctly");
@@ -337,8 +447,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
             Assert.AreEqual(issue.IsPrivate, createdIssue.IsPrivate, "IsPrivate was not set correctly");
 
-            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly"); 
-            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly");
+            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly");
             Assert.AreEqual(metaData.PriorityName, createdIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
@@ -395,7 +505,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(createdIssue.IsPrivate, updatedIssue.IsPrivate, "IsPrivate was not set correctly");
 
             Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.Author.Id, "Author was not set correctly");
-            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly"); 
+            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly");
             Assert.AreEqual(updateMetaData.PriorityName, updatedIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(updateMetaData.TrackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(updateMetaData.StateName, updatedIssue.Status.Name, "Status was not set correctly");
