@@ -882,6 +882,130 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Attachements
 
+        #region Notes
+
+        /// <summary>
+        /// Gets the journal entries of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <returns>The journal entries of the issues</returns>
+        public IList<Journal> GetJournals(int issueId)
+        {
+            return this.GetJournals(issueId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the journal entries of an issue
+        /// </summary>
+        /// <param name="issueId">The id of the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The journal entries of the issues</returns>
+        public IList<Journal> GetJournals(int issueId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No issue id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            IList<Journal> journals = RedmineClient.InvokeWithRetries(() =>
+                {
+                    RedmineManager redmineManager = this.GetRedmineManager();
+                    NameValueCollection parameters = new NameValueCollection();
+                    parameters.Add("include", "journals");
+                    Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
+                    return issue.Journals;
+                }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return journals;
+        }
+
+        /// <summary>
+        /// Gets a journal entry
+        /// </summary>
+        /// <param name="issueId">The id of the issue containing the journal entry</param>
+        /// <param name="id">The id of the journal entry</param>
+        /// <returns>The specified journal entry</returns>
+        public Journal GetJournal(int issueId, int id)
+        {
+            return this.GetJournal(issueId, id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a journal entry
+        /// </summary>
+        /// <param name="issueId">The id of the issue containing the journal entry</param>
+        /// <param name="id">The id of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The specified journal entry</returns>
+        public Journal GetJournal(int issueId, int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No journal id defined");
+            Contract.Requires(id > 0, "No journal id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            IList<Journal> journals = this.GetJournals(issueId, totalAttempts, baseRetryIntervallMilliseconds);
+            Journal journal = journals.FirstOrDefault(j => j.Id == id);
+
+            if (null == journal)
+            {
+                //If there is no journal with the specified id throw an exception so that the behaviour is the same as for other redmine objects
+                throw new RedmineException("Not Found");
+            }
+
+            return journal;
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalContent">The content of the journal entry</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, string journalContent)
+        {
+            return this.CreateJournal(issueId, journalContent, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalContent">The content of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, string journalContent, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No issue id defined");
+            Contract.Requires(!string.IsNullOrEmpty(journalContent), "No journal content defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
+            issue.Notes = journalContent;
+
+            Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
+            IList<Journal> journals = this.GetJournals(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
+
+            //unfortunately journals we do not have the ID of the journal entry. So we load the latest journal entry.
+            Journal createdJournal = journals.OrderByDescending(a => a.CreatedOn).FirstOrDefault();
+
+            return createdJournal;
+        }
+
+        #endregion Notes
+
         #region Load Items Selections
 
         /// <summary>

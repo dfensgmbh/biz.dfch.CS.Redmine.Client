@@ -643,6 +643,85 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         #endregion Attachments
 
+        #region Journals
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetJournalList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Journal> journals = redmineClient.GetJournals(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(journals, "No journals received");
+            Assert.IsTrue(journals.Count > 0, "Journal list is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetJournalListInvalidIssueId()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                IList<Journal> journals = redmineClient.GetJournals(int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetJournal()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Journal journal = redmineClient.GetJournal(TestEnvironment.IssueId, TestEnvironment.JournalId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(journal, "No journal received");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetJournalInvalidId()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Journal journal = redmineClient.GetJournal(TestEnvironment.IssueId, int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }        
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateJournal()
+        {
+            string journalText = "The quick brown fox jumps over the lazy dog.";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalText, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdJournal, "No journal received");
+            Assert.AreEqual(journalText, createdJournal.Notes, "Journal text not set correctly");
+        }
+
+        #endregion Journals
+
         #region Load Items Source Objects
 
         [TestMethod]

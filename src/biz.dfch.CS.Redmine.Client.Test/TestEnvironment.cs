@@ -36,6 +36,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public static string ProjectIdentifier1 { get; set; }
         public static string ProjectIdentifier2 { get; set; }
         public static int AttachmentId { get; set; }
+        public static int JournalId { get; set; }
         public static string AttachmentFilePath { get; set; }
 
         static TestEnvironment()
@@ -51,6 +52,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             TestEnvironment.ProjectIdentifier1 = "testprojekt";
             TestEnvironment.ProjectIdentifier2 = "d27f27bf-e2e9-47c6-b87f-a93fe31dec32";
             TestEnvironment.AttachmentId = 2;
+            TestEnvironment.JournalId = 9;
 
             //lab3
             //TestEnvironment.RedminUrl = "http://172.19.115.27";
@@ -63,6 +65,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             //TestEnvironment.ProjectIdentifier1 = "project-for-testing";
             //TestEnvironment.ProjectIdentifier2 = "project-for-testing-2";
             //TestEnvironment.AttachmentId = 1;
+            //TestEnvironment.JournalId = 1;
 
             TestEnvironment.TotalAttempts = 3;
             TestEnvironment.BaseRetryIntervallMilliseconds = 100;
