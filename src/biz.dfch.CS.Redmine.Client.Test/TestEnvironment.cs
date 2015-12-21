@@ -55,7 +55,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             TestEnvironment.JournalId = 9;
 
             //lab3
-            //TestEnvironment.RedminUrl = "http://172.19.115.27";
+            //TestEnvironment.RedminUrl = "https://172.19.115.27";
             //TestEnvironment.RedmineLogin = "tgdkuni7";
             //TestEnvironment.RedminePassword = "redmine$01";
             //TestEnvironment.ProjectId = 1;
@@ -65,7 +65,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             //TestEnvironment.ProjectIdentifier1 = "project-for-testing";
             //TestEnvironment.ProjectIdentifier2 = "project-for-testing-2";
             //TestEnvironment.AttachmentId = 1;
-            //TestEnvironment.JournalId = 1;
+            //TestEnvironment.JournalId = 3;
 
             TestEnvironment.TotalAttempts = 3;
             TestEnvironment.BaseRetryIntervallMilliseconds = 100;

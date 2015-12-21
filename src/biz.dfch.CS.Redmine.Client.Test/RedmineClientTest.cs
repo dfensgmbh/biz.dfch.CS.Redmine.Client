@@ -4,6 +4,7 @@ using System.IO;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
+using System.Linq;
 
 namespace biz.dfch.CS.Redmine.Client.Test
 {
@@ -263,7 +264,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Project createdProject = redmineClient.CreateProject(project, TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(createdProject.Parent, "Parent not defined before updating");
-            
+
             Project updatedProject = redmineClient.UpdateProject(createdProject, TestEnvironment.ProjectIdentifier2, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(updatedProject, "No project received");
@@ -704,22 +705,26 @@ namespace biz.dfch.CS.Redmine.Client.Test
             {
                 Assert.IsTrue(ex.Message.Contains("Not Found"));
             }
-        }        
+        }
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
         public void CreateJournal()
         {
-            string journalText = "The quick brown fox jumps over the lazy dog.";
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalText, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            JournalData journalData = new JournalData()
+            {
+                Note = "The quick brown fox jumps over the lazy dog.",
+                IsPrivateNote = true,
+            };
+            Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(createdJournal, "No journal received");
-            Assert.AreEqual(journalText, createdJournal.Notes, "Journal text not set correctly");
+            Assert.AreEqual(journalData.Note, createdJournal.Notes, "Journal text not set correctly");
         }
-
+        
         #endregion Journals
 
         #region Load Items Source Objects

@@ -602,14 +602,14 @@ namespace biz.dfch.CS.Redmine.Client
             Trace.WriteLine(string.Format("RedmineClient.CreateIssue({0}, {1}, {2})", issue.Subject, totalAttempts, baseRetryIntervallMilliseconds));
 
             this.SetIssueMetaData(issueData, issue, totalAttempts, baseRetryIntervallMilliseconds);
-            Issue createdIssue = RedmineClient.InvokeWithRetries(() =>
+            Issue updatedIssue = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
                 redmineManager.UpdateObject(issue.Id.ToString(), issue);
                 return this.GetIssue(issue.Id, totalAttempts, baseRetryIntervallMilliseconds);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
-            return createdIssue;
+            return updatedIssue;
         }
 
         /// <summary>
@@ -741,7 +741,7 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Issues
 
-        #region Attachments
+        #region Journals
 
         /// <summary>
         /// Gets the attachments of an issue
@@ -967,33 +967,35 @@ namespace biz.dfch.CS.Redmine.Client
         /// Creates a new journal entry and appends it to an existing issue
         /// </summary>
         /// <param name="issueId">Issue to append the journal entry</param>
-        /// <param name="journalContent">The content of the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
         /// <returns>The new created journal entry</returns>
-        public Journal CreateJournal(int issueId, string journalContent)
+        public Journal CreateJournal(int issueId, JournalData journalData)
         {
-            return this.CreateJournal(issueId, journalContent, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.CreateJournal(issueId, journalData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
         /// Creates a new journal entry and appends it to an existing issue
         /// </summary>
         /// <param name="issueId">Issue to append the journal entry</param>
-        /// <param name="journalContent">The content of the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The new created journal entry</returns>
-        public Journal CreateJournal(int issueId, string journalContent, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public Journal CreateJournal(int issueId, JournalData journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(issueId > 0, "No issue id defined");
-            Contract.Requires(!string.IsNullOrEmpty(journalContent), "No journal content defined");
+            Contract.Requires(null != journalData, "No journal data defined");
+            Contract.Requires(!string.IsNullOrEmpty(journalData.Note), "No journal content defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
             #endregion Contract
 
             Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
-            issue.Notes = journalContent;
+            issue.Notes = journalData.Note;
+            issue.PrivateNotes = journalData.IsPrivateNote;
 
             Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
             IList<Journal> journals = this.GetJournals(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
