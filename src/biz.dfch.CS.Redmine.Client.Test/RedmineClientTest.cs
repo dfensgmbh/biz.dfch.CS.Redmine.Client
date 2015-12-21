@@ -835,8 +835,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 FirstName = "Luke",
                 LastName = "Skywalker",
                 Login = "lukesky",
-                Password = "redmine$01",
-                Status = UserStatus.STATUS_ACTIVE
+                Password = "redmine$01"
             };
             User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -848,7 +847,44 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(user.Login, createdUser.Login, "Login was not set correctly");
             //password is not returned by the API
             //Assert.AreEqual(user.Password, createdUser.Password, "Password was not set correctly");
-            Assert.AreEqual(user.Status, createdUser.Status, "Status was not set correctly");
+
+            redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01",
+                Status = UserStatus.STATUS_ACTIVE
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            createdUser.Email = "other.mail@bla.com";
+            createdUser.FirstName = "Obiwan";
+            createdUser.LastName = "Kenobi";
+            createdUser.Login = "wanken";
+            createdUser.Password = "redmine$02";
+
+            User updatedUser = redmineClient.UpdateUser(createdUser, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No user received");
+            Assert.IsTrue(updatedUser.Id > 0, "No Id defined in returned user");
+            Assert.AreEqual(createdUser.Email, updatedUser.Email, "Email was not set correctly");
+            Assert.AreEqual(createdUser.FirstName, updatedUser.FirstName, "FirstName was not set correctly");
+            Assert.AreEqual(createdUser.LastName, updatedUser.LastName, "LastName was not set correctly");
+            Assert.AreEqual(createdUser.Login, updatedUser.Login, "Login was not set correctly");
+            //password is not returned by the API
+            //Assert.AreEqual(createdUser.Password, updatedUser.Password, "Password was not set correctly");
 
             redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
