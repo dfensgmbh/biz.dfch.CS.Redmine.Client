@@ -1267,6 +1267,16 @@ namespace biz.dfch.CS.Redmine.Client
         /// Gets the list of users for the specified project
         /// </summary>
         /// <param name="projectId">The id of the project to get the users for</param>
+        /// <returns>The list of users for the specified project</returns>
+        public IList<ProjectUser> GetUsersInProject(int projectId)
+        {
+            return this.GetUsersInProject(projectId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of users for the specified project
+        /// </summary>
+        /// <param name="projectId">The id of the project to get the users for</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The list of users for the specified project</returns>
@@ -1293,18 +1303,82 @@ namespace biz.dfch.CS.Redmine.Client
             List<ProjectUser> projectUsers = new List<ProjectUser>();
             foreach (ProjectMembership membership in memberships.Where(m => null != m.User)) //ignore memberships of groups
             {
-                User user = users.FirstOrDefault(u => u.Id == membership.User.Id);
-                ProjectUser projectUser = new ProjectUser();
-                projectUser.UserId = membership.User.Id;
-                projectUser.UserLogin = user.Login;
-                foreach (MembershipRole role in membership.Roles)
-                {
-                    projectUser.Roles.Add(role.Name);
-                }
+                ProjectUser projectUser = RedmineClient.CreateProjectUser(users, membership);
                 projectUsers.Add(projectUser);
             }
 
             return projectUsers;
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="rolesNames">The names of the roles the user will have i the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of users for the specified project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, List<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(projectId > 0, "No project id defined");
+            Contract.Requires(userId > 0, "No user id defined");
+            Contract.Requires(null != rolesNames, "No roles defined");
+            Contract.Requires(rolesNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            ProjectMembership projectMembership = new ProjectMembership()
+            {
+                Project = new IdentifiableName() { Id = projectId },
+                User = new IdentifiableName() { Id = userId },
+                Roles = new List<MembershipRole>()
+            };
+
+            IList<Role> roles = this.GetRoles(totalAttempts, baseRetryIntervallMilliseconds);
+            foreach(string roleName in rolesNames)
+            {
+                Role role = roles.FirstOrDefault(r=>r.Name==roleName);
+                Contract.Assert(null!=role, string.Format("No role wich name {0} found", roleName));
+                MembershipRole membershipRole = new MembershipRole() { Id = role.Id };
+                projectMembership.Roles.Add(membershipRole);
+            }
+
+            ProjectMembership createdMembership = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.CreateObject<ProjectMembership>(projectMembership, projectId.ToString());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+            List<ProjectUser> projectUsers = new List<ProjectUser>();
+            ProjectUser projectUser = RedmineClient.CreateProjectUser(users, createdMembership);
+
+            return projectUser;
+        }
+
+        /// <summary>
+        /// Creates a project user from a project membership
+        /// </summary>
+        /// <param name="users">The list of all users</param>
+        /// <param name="membership">The project membership</param>
+        /// <returns>The project user created from the project membership</returns>
+        private static ProjectUser CreateProjectUser(IList<User> users, ProjectMembership membership)
+        {
+            User user = users.FirstOrDefault(u => u.Id == membership.User.Id);
+            ProjectUser projectUser = new ProjectUser();
+            projectUser.UserId = membership.User.Id;
+            projectUser.UserLogin = user.Login;
+            foreach (MembershipRole role in membership.Roles)
+            {
+                projectUser.Roles.Add(role.Name);
+            }
+            return projectUser;
         }
 
         #endregion Membership
