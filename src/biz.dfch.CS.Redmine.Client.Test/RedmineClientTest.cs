@@ -120,7 +120,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Project project = redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(project, "No user received");
-            Assert.AreEqual(TestEnvironment.ProjectIdentifier1, project.Identifier, "Wrong priority returned");
+            Assert.AreEqual(TestEnvironment.ProjectIdentifier1, project.Identifier, "Wrong project returned");
         }
 
         [TestMethod]
@@ -130,9 +130,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(project, "Project found with invalid identifier");
+            try
+            {
+                Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -806,7 +812,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(user, "No user received");
-            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong priority returned");
+            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong user returned");
         }
 
         [TestMethod]
@@ -817,9 +823,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(user, "User found with invalid login");
+            try
+            {
+                User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -926,6 +938,45 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         #endregion Users
 
+        #region Memberships
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUsersOfProject()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void AddUserToProject()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRolesOfUserInProject()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateRolesOfUserInProject()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void RemoveUserFromProject()
+        {
+            Assert.IsTrue(false, "Not yet implemented");
+        }
+
+        #endregion Memberships
+
         #region Load Items Source Objects
 
         [TestMethod]
@@ -963,9 +1014,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(state, "State found with invalid name");
+            try
+            {
+                IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -1003,9 +1060,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(priority, "Priority found with invalid name");
+            try
+            {
+                IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -1032,7 +1095,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(tracker, "No tracker received");
-            Assert.AreEqual(trackerName, tracker.Name, "Wrong priority returned");
+            Assert.AreEqual(trackerName, tracker.Name, "Wrong tracker returned");
         }
 
         [TestMethod]
@@ -1043,9 +1106,61 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            try
+            {
+                Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }
 
-            Assert.IsNull(tracker, "Tracker found with invalid name");
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Role> roles = redmineClient.GetRoles(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(roles, "No roles received");
+            Assert.IsTrue(roles.Count > 0, "List of roles is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleByName()
+        {
+            string roleName = "Developer";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Role role = redmineClient.GetRoleByName(roleName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(role, "No role received");
+            Assert.AreEqual(roleName, role.Name, "Wrong role returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleInvalidName()
+        {
+            string roleName = "NotARole";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Role role = redmineClient.GetRoleByName(roleName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         #endregion Load Items Source Objects
