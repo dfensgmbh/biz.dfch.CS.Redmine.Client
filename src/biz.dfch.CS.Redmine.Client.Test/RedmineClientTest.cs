@@ -850,7 +850,42 @@ namespace biz.dfch.CS.Redmine.Client.Test
             //Assert.AreEqual(user.Password, createdUser.Password, "Password was not set correctly");
             Assert.AreEqual(user.Status, createdUser.Status, "Status was not set correctly");
 
-            //redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void DeleteUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01",
+                Status = UserStatus.STATUS_ACTIVE
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User loadedUser = redmineClient.GetUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedUser, "User was not created correctly");
+
+            bool success = redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                User loadedUserAfterDeletion = redmineClient.GetUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         #endregion Users
