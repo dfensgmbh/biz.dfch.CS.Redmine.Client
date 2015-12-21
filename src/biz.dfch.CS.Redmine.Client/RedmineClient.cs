@@ -741,7 +741,7 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Issues
 
-        #region Journals
+        #region Attachments
 
         /// <summary>
         /// Gets the attachments of an issue
@@ -869,6 +869,8 @@ namespace biz.dfch.CS.Redmine.Client
                      Token = uploadedFile.Token,                      
                 }
             };
+            issue.Notes = attachmentData.Notes;
+            issue.PrivateNotes = attachmentData.PrivateNotes;
 
             Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
             IList<Attachment> attachments = this.GetAttachments(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);
@@ -882,7 +884,7 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Attachements
 
-        #region Notes
+        #region Journals
 
         /// <summary>
         /// Gets the journal entries of an issue
@@ -988,14 +990,14 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(issueId > 0, "No issue id defined");
             Contract.Requires(null != journalData, "No journal data defined");
-            Contract.Requires(!string.IsNullOrEmpty(journalData.Note), "No journal content defined");
+            Contract.Requires(!string.IsNullOrEmpty(journalData.Notes), "No journal content defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
             #endregion Contract
 
             Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
-            issue.Notes = journalData.Note;
-            issue.PrivateNotes = journalData.IsPrivateNote;
+            issue.Notes = journalData.Notes;
+            issue.PrivateNotes = journalData.PrivateNotes;
 
             Issue updatedIssue = this.UpdateIssue(issue, totalAttempts, baseRetryIntervallMilliseconds);
             IList<Journal> journals = this.GetJournals(updatedIssue.Id, totalAttempts, baseRetryIntervallMilliseconds);

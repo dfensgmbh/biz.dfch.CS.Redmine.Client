@@ -24,7 +24,7 @@ namespace biz.dfch.CS.Redmine.Client.Model
 {
     public class JournalData
     {
-        public string Note { get; set; }
-        public bool IsPrivateNote { get; set; }
+        public string Notes { get; set; }
+        public bool PrivateNotes { get; set; }
     }
 }

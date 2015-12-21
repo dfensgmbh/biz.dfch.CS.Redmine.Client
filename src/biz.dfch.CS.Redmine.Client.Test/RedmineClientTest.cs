@@ -632,6 +632,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 ContentType = "text/plain",
                 FileName = "APIUpload.txt",
                 Description = "Uploadet via API",
+                Notes = "Note for the attachment",
+                PrivateNotes = true,
             };
 
             Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
@@ -640,6 +642,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(attachmentData.Description, createdAttachment.Description, "Description was not set correctly");
             Assert.AreEqual(attachmentData.FileName, createdAttachment.FileName, "File name was not set correctly");
             Assert.AreEqual(attachmentData.ContentType, createdAttachment.ContentType, "Content type was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(attachmentData.Notes, lastJournal.Notes, "Journal notes not set correctly");
         }
 
         #endregion Attachments
@@ -716,13 +724,13 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             JournalData journalData = new JournalData()
             {
-                Note = "The quick brown fox jumps over the lazy dog.",
-                IsPrivateNote = true,
+                Notes = "The quick brown fox jumps over the lazy dog.",
+                PrivateNotes = true,
             };
             Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(createdJournal, "No journal received");
-            Assert.AreEqual(journalData.Note, createdJournal.Notes, "Journal text not set correctly");
+            Assert.AreEqual(journalData.Notes, createdJournal.Notes, "Journal text not set correctly");
         }
         
         #endregion Journals
