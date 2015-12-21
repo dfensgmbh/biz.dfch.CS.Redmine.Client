@@ -1091,6 +1091,43 @@ namespace biz.dfch.CS.Redmine.Client
         }
 
         /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <returns>The specified user</returns>
+        public User CreateUser(User user)
+        {
+            return this.CreateUser(user, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The specified user</returns>
+        public User CreateUser(User user, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != user, "No user id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            User createdUser = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.CreateObject<User>(user);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return createdUser;
+        }
+
+        /// <summary>
         /// Gets a user by login name
         /// </summary>
         /// <param name="login">The login of the user</param>

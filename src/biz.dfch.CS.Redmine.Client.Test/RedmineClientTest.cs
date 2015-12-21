@@ -822,6 +822,37 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.IsNull(user, "User found with invalid login");
         }
 
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01",
+                Status = UserStatus.STATUS_ACTIVE
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdUser, "No user received");
+            Assert.IsTrue(createdUser.Id > 0, "No Id defined in returned user");
+            Assert.AreEqual(user.Email, createdUser.Email, "Email was not set correctly");
+            Assert.AreEqual(user.FirstName, createdUser.FirstName, "FirstName was not set correctly");
+            Assert.AreEqual(user.LastName, createdUser.LastName, "LastName was not set correctly");
+            Assert.AreEqual(user.Login, createdUser.Login, "Login was not set correctly");
+            //password is not returned by the API
+            //Assert.AreEqual(user.Password, createdUser.Password, "Password was not set correctly");
+            Assert.AreEqual(user.Status, createdUser.Status, "Status was not set correctly");
+
+            //redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
         #endregion Users
 
         #region Load Items Source Objects
