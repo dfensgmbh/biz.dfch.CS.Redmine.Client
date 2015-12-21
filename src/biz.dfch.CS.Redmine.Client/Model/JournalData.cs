@@ -22,12 +22,8 @@ using System.Threading.Tasks;
 
 namespace biz.dfch.CS.Redmine.Client.Model
 {
-    public class AttachmentData
+    public class JournalData
     {
-        public string FileName { get; set; }
-        public string Description { get; set; }
-        public string ContentType { get; set; }
-        public byte[] Content { get; set; }
         public string Notes { get; set; }
         public bool PrivateNotes { get; set; }
     }
