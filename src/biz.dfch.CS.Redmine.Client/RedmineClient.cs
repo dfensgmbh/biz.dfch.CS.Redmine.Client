@@ -542,6 +542,7 @@ namespace biz.dfch.CS.Redmine.Client
                     return redmineManager.CreateObject(issue);
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
+            //Notes will not be saved when creating a new issue, so we have to make an update to save them.
             if (!string.IsNullOrEmpty(issueData.Notes))
             {
                 createdIssue.Notes = issueData.Notes;
