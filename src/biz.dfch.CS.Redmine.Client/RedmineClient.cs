@@ -107,7 +107,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="username">The user name for authentication</param>
         /// <param name="password">The password for authentication</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>True if the user could be authorized on the server</returns>
         public bool Login(string redmineUrl, string username, string password, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -116,7 +116,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(!string.IsNullOrEmpty(username), "No username defined");
             Contract.Requires(!string.IsNullOrEmpty(password), "No password defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.Login({0}, {1}, {2}, {3}, {4})", redmineUrl, username, password, totalAttempts, baseRetryIntervallMilliseconds));
@@ -176,14 +176,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// Gets the list of projects
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The list of projects</returns>
         public IList<Project> GetProjects(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetProjects({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
@@ -212,7 +212,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="id">ID of the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The project specified by the ID</returns>
         public Project GetProject(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -220,7 +220,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(id > 0, "No project id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
@@ -249,7 +249,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="identifier">Identifier of the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The project specified by the identifier or null if there is no project with the specified identifier</returns>
         public Project GetProjectByIdentifier(string identifier, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -257,7 +257,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(!string.IsNullOrEmpty(identifier), "No project identifier defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetProjectByIdentifier({0}, {1}, {2})", identifier, totalAttempts, baseRetryIntervallMilliseconds));
@@ -284,7 +284,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="project">The project to create</param>
         /// <param name="parentIdentifier">Identifier of the parent or null if the parent is specified in the project object or the project is a root project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The created project</returns>
         public Project CreateProject(Project project, string parentIdentifier, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -292,7 +292,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(null != project, "No project defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.CreateProject({0}, {1}, {2}, {3})", project.Name, parentIdentifier, totalAttempts, baseRetryIntervallMilliseconds));
@@ -329,7 +329,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="project">The new project data</param>
         /// <param name="parentIdentifier">Identifier of the parent or null if the parent is specified in the project object or the project is a root project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The updated project</returns>
         public Project UpdateProject(Project project, string parentIdentifier, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -337,7 +337,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(null != project, "No project defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.UpdateProject({0}, {1}, {2},  {3})", project.Name, parentIdentifier, totalAttempts, baseRetryIntervallMilliseconds));
@@ -374,7 +374,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="id">The id of the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>True if the project could be deleted</returns>
         public bool DeleteProject(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -382,7 +382,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(id > 0, "No project id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.DeleteProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
@@ -416,14 +416,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="projectId">The id of the project to get the issues for</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The list of issues for a project</returns>
         public IList<Issue> GetIssues(int? projectId, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
@@ -457,7 +457,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="id">The id of the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The issue</returns>
         public Issue GetIssue(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -465,7 +465,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(id > 0, "No issue id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssue({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
@@ -483,8 +483,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// Creates a new issue
         /// </summary>
         /// <param name="issue">The data for the issue to create</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue)
         {
@@ -496,7 +494,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issue">The data for the issue to create</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -508,8 +506,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issue">The data for the issue to create</param>
         /// <param name="issueData">The meta data object for the issue</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue, IssueMetaData issueData)
         {
@@ -522,7 +518,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issue">The data for the issue to create</param>
         /// <param name="issueData">The meta data object for the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue, IssueMetaData issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -530,7 +526,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(null != issue, "No issue defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.CreateIssue({0}, {1}, {2})", issue.Subject, totalAttempts, baseRetryIntervallMilliseconds));
@@ -557,8 +553,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// Updates an issue
         /// </summary>
         /// <param name="issue">The data for the issue to update</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue)
         {
@@ -570,7 +564,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issue">The data for the issue to update</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -582,8 +576,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issue">The data for the issue to update</param>
         /// <param name="issueData">The meta data object for the issue</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue, IssueMetaData issueData)
         {
@@ -596,7 +588,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issue">The data for the issue to update</param>
         /// <param name="issueData">The meta data object for the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue, IssueMetaData issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -604,7 +596,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(null != issue, "No issue defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.CreateIssue({0}, {1}, {2})", issue.Subject, totalAttempts, baseRetryIntervallMilliseconds));
@@ -635,7 +627,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="id">The id of the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>True if the issue could be deleted</returns>
         public bool DeleteIssue(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -643,7 +635,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(id > 0, "No issue id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.DeleteIssue({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
@@ -664,7 +656,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueData">The meta data to set in the issue</param>
         /// <param name="issue">The issue to change</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         private void SetIssueMetaData(IssueMetaData issueData, Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             if (null != issueData)
@@ -773,14 +765,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issueId">The id of the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The attachments of the issues</returns>
         public IList<Attachment> GetAttachments(int issueId, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetAttachements({0}, {1}, {2})", issueId, totalAttempts, baseRetryIntervallMilliseconds));
@@ -812,7 +804,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="id">The id of the attachment</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The specified attachment</returns>
         public Attachment GetAttachment(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -820,7 +812,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(id > 0, "No attachment id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetAttachment({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
@@ -851,7 +843,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the attachment</param>
         /// <param name="attachmentData">The data for the attachment</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The new created attachment</returns>
         public Attachment CreateAttachment(int issueId, AttachmentData attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -863,7 +855,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(attachmentData.Content.Length > 0, "Attachment content is empty");
             Contract.Requires(!string.IsNullOrEmpty(attachmentData.FileName), "No file name defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Upload uploadedFile = RedmineClient.InvokeWithRetries(() =>
@@ -916,7 +908,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="issueId">The id of the issue</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The journal entries of the issues</returns>
         public IList<Journal> GetJournals(int issueId, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -924,7 +916,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(issueId > 0, "No issue id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             IList<Journal> journals = RedmineClient.InvokeWithRetries(() =>
@@ -956,7 +948,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">The id of the issue containing the journal entry</param>
         /// <param name="id">The id of the journal entry</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The specified journal entry</returns>
         public Journal GetJournal(int issueId, int id, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -965,7 +957,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(issueId > 0, "No journal id defined");
             Contract.Requires(id > 0, "No journal id defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             IList<Journal> journals = this.GetJournals(issueId, totalAttempts, baseRetryIntervallMilliseconds);
@@ -997,7 +989,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the journal entry</param>
         /// <param name="journalData">The data of the journal entry</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The new created journal entry</returns>
         public Journal CreateJournal(int issueId, JournalData journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -1007,7 +999,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(null != journalData, "No journal data defined");
             Contract.Requires(!string.IsNullOrEmpty(journalData.Notes), "No journal content defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
@@ -1025,12 +1017,233 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Notes
 
+        #region Users
+
+        /// <summary>
+        /// Loads list of users
+        /// </summary>
+        /// <returns>The list of users</returns>
+        public IList<User> GetUsers()
+        {
+            return this.GetUsers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads list of users
+        /// </summary>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of users</returns>
+        public IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<User> users = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.GetObjectList<User>(new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return users;
+        }
+
+        /// <summary>
+        /// Loads a user
+        /// </summary>
+        /// <param name="id">The id of the user</param>
+        /// <returns>The specified user</returns>
+        public User GetUser(int id)
+        {
+            return this.GetUser(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Loads a user
+        /// </summary>
+        /// <param name="id">The id of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The specified user</returns>
+        public User GetUser(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id > 0, "No user id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            User user = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.GetObject<User>(id.ToString(), new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return user;
+        }
+
+        /// <summary>
+        /// Gets a user by login name
+        /// </summary>
+        /// <param name="login">The login of the user</param>
+        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
+        public User GetUserByLogin(string login)
+        {
+            return this.GetUserByLogin(login, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets a user by login name
+        /// </summary>
+        /// <param name="login">The login of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
+        public User GetUserByLogin(string login, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(login), "No user login name defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetUserByLogin({0}, {1}, {2})", login, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+
+            return users.FirstOrDefault(s => s.Login == login);
+        }
+
+        /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <returns>The specified user</returns>
+        public User CreateUser(User user)
+        {
+            return this.CreateUser(user, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The specified user</returns>
+        public User CreateUser(User user, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != user, "No user defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.CreateUser({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            User createdUser = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.CreateObject<User>(user);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return createdUser;
+        }
+
+        /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <returns>The specified user</returns>
+        public User UpdateUser(User user)
+        {
+            return this.UpdateUser(user, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a user
+        /// </summary>
+        /// <param name="user">The data for the user to create</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The specified user</returns>
+        public User UpdateUser(User user, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(null != user, "No user defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.UpdateUser({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            User updatedUser = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.UpdateObject(user.Id.ToString(), user);
+                return this.GetUser(user.Id, totalAttempts, baseRetryIntervallMilliseconds);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return updatedUser;
+        }
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id">The id of the user</param>
+        /// <returns>True if the issue could be deleted</returns>
+        public bool DeleteUser(int id)
+        {
+            return this.DeleteUser(id, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id">The id of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>True if the issue could be deleted</returns>
+        public bool DeleteUser(int id, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(id>0, "No user id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.DeleteUser({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.DeleteObject<User>(id.ToString(), new NameValueCollection());
+                return true;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
+        }
+
+        #endregion Users
+
         #region Load Items Selections
 
         /// <summary>
         /// Loads issues states
         /// </summary>
-        /// <returns>Return the list of issues states</returns>
+        /// <returns>The list of issues states</returns>
         public IList<IssueStatus> GetIssueStates()
         {
             return this.GetIssueStates(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
@@ -1040,14 +1253,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// Loads issues states
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
-        /// <returns>Return the list of issues states</returns>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues states</returns>
         public IList<IssueStatus> GetIssueStates(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssueStates({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
@@ -1076,7 +1289,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="name">The name of the state</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The state with the specified name or null if there is no state with the specified name</returns>
         public IssueStatus GetIssueStateByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -1084,7 +1297,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(!string.IsNullOrEmpty(name), "No state name defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssueStateByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
@@ -1097,7 +1310,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Loads issues priorities
         /// </summary>
-        /// <returns>Return the list of issues priorities</returns>
+        /// <returns>The list of issues priorities</returns>
         public IList<IssuePriority> GetIssuePriorities()
         {
             return this.GetIssuePriorities(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
@@ -1107,14 +1320,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// Loads issues priorities
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
-        /// <returns>Return the list of issues priorities</returns>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues priorities</returns>
         public IList<IssuePriority> GetIssuePriorities(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorities({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
@@ -1143,7 +1356,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="name">The name of the priority</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The priority with the specified name or null if there is no priority with the specified name</returns>
         public IssuePriority GetIssuePriorityByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -1151,7 +1364,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(!string.IsNullOrEmpty(name), "No priority name defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorityByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
@@ -1159,73 +1372,6 @@ namespace biz.dfch.CS.Redmine.Client
             IList<IssuePriority> priortities = this.GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
 
             return priortities.FirstOrDefault(s => s.Name == name);
-        }
-
-        /// <summary>
-        /// Loads list of users
-        /// </summary>
-        /// <returns>Return the list of users</returns>
-        public IList<User> GetUsers()
-        {
-            return this.GetUsers(this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
-        }
-
-        /// <summary>
-        /// Loads list of users
-        /// </summary>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
-        /// <returns>Return the list of users</returns>
-        public IList<User> GetUsers(int totalAttempts, int baseRetryIntervallMilliseconds)
-        {
-            #region Contract
-            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
-            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
-            #endregion Contract
-
-            Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
-
-            IList<User> users = RedmineClient.InvokeWithRetries(() =>
-            {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObjectList<User>(new NameValueCollection());
-            }, totalAttempts, baseRetryIntervallMilliseconds);
-
-            return users;
-        }
-
-        /// <summary>
-        /// Gets a user by login name
-        /// </summary>
-        /// <param name="login">The login of the user</param>
-        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
-        public User GetUserByLogin(string login)
-        {
-            return this.GetUserByLogin(login, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
-        }
-
-        /// <summary>
-        /// Gets a user by login name
-        /// </summary>
-        /// <param name="login">The login of the user</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
-        /// <returns>The user with the specified login or null if there is no user with the specified login</returns>
-        public User GetUserByLogin(string login, int totalAttempts, int baseRetryIntervallMilliseconds)
-        {
-            #region Contract
-            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
-            Contract.Requires(!string.IsNullOrEmpty(login), "No user login name defined");
-            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
-            #endregion Contract
-
-            Trace.WriteLine(string.Format("RedmineClient.GetUserByLogin({0}, {1}, {2})", login, totalAttempts, baseRetryIntervallMilliseconds));
-
-            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
-
-            return users.FirstOrDefault(s => s.Login == login);
         }
 
         /// <summary>
@@ -1241,14 +1387,14 @@ namespace biz.dfch.CS.Redmine.Client
         /// Loads list of trackers (issue type)
         /// </summary>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
-        /// <returns>Return the list of trackers (issue type)</returns>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of trackers (issue type)</returns>
         public IList<Tracker> GetTrackers(int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "baseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
@@ -1277,7 +1423,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="login">The name of the tracker</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseWaitingMilliseconds">Default base retry intervall milliseconds in job polling</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The tracker with the specified name or null if there is no tracker with the specified name</returns>
         public Tracker GetTrackerByName(string name, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
@@ -1285,7 +1431,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(!string.IsNullOrEmpty(name), "No tracker name defined");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
-            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseWaitingMilliseconds must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
             Trace.WriteLine(string.Format("RedmineClient.GetTrackerByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));

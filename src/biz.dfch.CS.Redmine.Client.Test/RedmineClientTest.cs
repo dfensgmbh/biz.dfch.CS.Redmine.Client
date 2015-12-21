@@ -751,6 +751,181 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         #endregion Journals
 
+        #region Users
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUserList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<User> users = redmineClient.GetUsers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(users, "No users received");
+            Assert.IsTrue(users.Count > 0, "List of users is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = redmineClient.GetUser(TestEnvironment.UserId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(user, "No user received");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUserInvalidId()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                User user = redmineClient.GetUser(int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUserByLogin()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(user, "No user received");
+            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong priority returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUserInvalidLogin()
+        {
+            string login = "NotAUser";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNull(user, "User found with invalid login");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01"
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdUser, "No user received");
+            Assert.IsTrue(createdUser.Id > 0, "No Id defined in returned user");
+            Assert.AreEqual(user.Email, createdUser.Email, "Email was not set correctly");
+            Assert.AreEqual(user.FirstName, createdUser.FirstName, "FirstName was not set correctly");
+            Assert.AreEqual(user.LastName, createdUser.LastName, "LastName was not set correctly");
+            Assert.AreEqual(user.Login, createdUser.Login, "Login was not set correctly");
+            //password is not returned by the API
+            //Assert.AreEqual(user.Password, createdUser.Password, "Password was not set correctly");
+
+            redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01",
+                Status = UserStatus.STATUS_ACTIVE
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            createdUser.Email = "other.mail@bla.com";
+            createdUser.FirstName = "Obiwan";
+            createdUser.LastName = "Kenobi";
+            createdUser.Login = "wanken";
+            createdUser.Password = "redmine$02";
+
+            User updatedUser = redmineClient.UpdateUser(createdUser, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No user received");
+            Assert.IsTrue(updatedUser.Id > 0, "No Id defined in returned user");
+            Assert.AreEqual(createdUser.Email, updatedUser.Email, "Email was not set correctly");
+            Assert.AreEqual(createdUser.FirstName, updatedUser.FirstName, "FirstName was not set correctly");
+            Assert.AreEqual(createdUser.LastName, updatedUser.LastName, "LastName was not set correctly");
+            Assert.AreEqual(createdUser.Login, updatedUser.Login, "Login was not set correctly");
+            //password is not returned by the API
+            //Assert.AreEqual(createdUser.Password, updatedUser.Password, "Password was not set correctly");
+
+            redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void DeleteUser()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User user = new User()
+            {
+                Email = "some.mail@serv.ch",
+                FirstName = "Luke",
+                LastName = "Skywalker",
+                Login = "lukesky",
+                Password = "redmine$01",
+                Status = UserStatus.STATUS_ACTIVE
+            };
+            User createdUser = redmineClient.CreateUser(user, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            User loadedUser = redmineClient.GetUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsNotNull(loadedUser, "User was not created correctly");
+
+            bool success = redmineClient.DeleteUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(success, "Did not receive success");
+
+            try
+            {
+                User loadedUserAfterDeletion = redmineClient.GetUser(createdUser.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }
+
+        #endregion Users
+
         #region Load Items Source Objects
 
         [TestMethod]
@@ -831,45 +1006,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNull(priority, "Priority found with invalid name");
-        }
-
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void GetUserList()
-        {
-            RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            IList<User> users = redmineClient.GetUsers(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNotNull(users, "No users received");
-            Assert.IsTrue(users.Count > 0, "List of users is empty");
-        }
-
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void GetUserByLogin()
-        {
-            RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNotNull(user, "No user received");
-            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong priority returned");
-        }
-
-        [TestMethod]
-        [TestCategory("SkipOnTeamCity")]
-        public void GetUserInvalidLogin()
-        {
-            string login = "NotAUser";
-            RedmineClient redmineClient = new RedmineClient();
-            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(user, "User found with invalid login");
         }
 
         [TestMethod]
