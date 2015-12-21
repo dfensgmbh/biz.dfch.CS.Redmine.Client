@@ -1263,7 +1263,49 @@ namespace biz.dfch.CS.Redmine.Client
 
         #region Membership
 
-        
+        /// <summary>
+        /// Gets the list of users for the specified project
+        /// </summary>
+        /// <param name="projectId">The id of the project to get the users for</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of users for the specified project</returns>
+        public IList<ProjectUser> GetUsersInProject(int projectId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(projectId > 0, "No project id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<ProjectMembership> memberships = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
+                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+            List<ProjectUser> projectUsers = new List<ProjectUser>();
+            foreach (ProjectMembership membership in memberships.Where(m => null != m.User)) //ignore memberships of groups
+            {
+                User user = users.FirstOrDefault(u => u.Id == membership.User.Id);
+                ProjectUser projectUser = new ProjectUser();
+                projectUser.UserId = membership.User.Id;
+                projectUser.UserLogin = user.Login;
+                foreach (MembershipRole role in membership.Roles)
+                {
+                    projectUser.Roles.Add(role.Name);
+                }
+                projectUsers.Add(projectUser);
+            }
+
+            return projectUsers;
+        }
 
         #endregion Membership
 

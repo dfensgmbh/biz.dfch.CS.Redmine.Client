@@ -944,7 +944,18 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetUsersOfProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(projectUsers, "No project users received");
+            Assert.IsTrue(projectUsers.Count > 0, "Project user list is empty");
+            foreach (ProjectUser projectUser in projectUsers)
+            {
+                Assert.IsNotNull(projectUser.Roles, "No roles received for user");
+                Assert.IsTrue(projectUser.Roles.Count>0, "Role list empty for user");
+            }
         }
 
         [TestMethod]
