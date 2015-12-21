@@ -542,6 +542,13 @@ namespace biz.dfch.CS.Redmine.Client
                     return redmineManager.CreateObject(issue);
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
+            if (!string.IsNullOrEmpty(issueData.Notes))
+            {
+                createdIssue.Notes = issueData.Notes;
+                createdIssue.PrivateNotes = issueData.PrivateNotes;
+                createdIssue = this.UpdateIssue(createdIssue, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+
             return createdIssue;
         }
 
@@ -735,6 +742,13 @@ namespace biz.dfch.CS.Redmine.Client
                         Id = tracker.Id,
                         Name = tracker.Name,
                     };
+                }
+
+                //Set Notes
+                if (!string.IsNullOrEmpty(issueData.Notes))
+                {
+                    issue.Notes = issueData.Notes;
+                    issue.PrivateNotes = issueData.PrivateNotes;
                 }
             }
         }

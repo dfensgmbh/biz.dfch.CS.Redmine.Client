@@ -438,6 +438,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 TrackerName = "Feature",
                 StateName = "New",
                 ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+                Notes = "This is a new issue with a note",
+                PrivateNotes = true,
             };
             Issue createdIssue = redmineClient.CreateIssue(issue, metaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -454,6 +456,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(metaData.StateName, createdIssue.Status.Name, "Status was not set correctly");
             Assert.AreEqual(redmineClient.GetProjectByIdentifier(metaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(metaData.Notes, lastJournal.Notes, "Journal notes not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -494,6 +502,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 TrackerName = "Bug",
                 StateName = "In Progress",
                 ProjectIdentifier = TestEnvironment.ProjectIdentifier2,
+                Notes = "This issue had to be changed",
+                PrivateNotes = true,
             };
 
             Issue updatedIssue = redmineClient.UpdateIssue(createdIssue, updateMetaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
@@ -511,6 +521,12 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(updateMetaData.TrackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
             Assert.AreEqual(updateMetaData.StateName, updatedIssue.Status.Name, "Status was not set correctly");
             Assert.AreEqual(redmineClient.GetProjectByIdentifier(updateMetaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(updateMetaData.Notes, lastJournal.Notes, "Journal notes not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -732,7 +748,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.IsNotNull(createdJournal, "No journal received");
             Assert.AreEqual(journalData.Notes, createdJournal.Notes, "Journal text not set correctly");
         }
-        
+
         #endregion Journals
 
         #region Load Items Source Objects

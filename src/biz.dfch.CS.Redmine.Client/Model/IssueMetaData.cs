@@ -48,5 +48,13 @@ namespace biz.dfch.CS.Redmine.Client.Model
         /// Name of the tracker (type) of the issue (eg. Bug, Feature, ...)
         /// </summary>
         public string TrackerName { get; set; }
+        /// <summary>
+        /// The notes for the issue
+        /// </summary>
+        public string Notes { get; set; }
+        /// <summary>
+        /// Defines if the the notes entry will be private or not
+        /// </summary>
+        public bool PrivateNotes { get; set; }
     }
 }
