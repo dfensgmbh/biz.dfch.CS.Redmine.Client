@@ -978,6 +978,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IList<ProjectUser> projectUsersAfterUpdate = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
             Assert.IsTrue(projectUsersAfterUpdate.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User was not added to project");
 
+            redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]
@@ -998,7 +1000,23 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void RemoveUserFromProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+           
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsersAfterAdd = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterAdd.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User not in project befor remove");
+
+            bool success = redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsTrue(success, "Did not receive success");
+            IList<ProjectUser> projectUsersAfterRemove = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsersAfterRemove.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User in project after remove");      
         }
 
         #endregion Memberships

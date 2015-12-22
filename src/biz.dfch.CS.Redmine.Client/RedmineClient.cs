@@ -1289,7 +1289,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.GetUsersInProject({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
 
             IList<ProjectMembership> memberships = RedmineClient.InvokeWithRetries(() =>
             {
@@ -1318,7 +1318,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="rolesNames">The names of the roles the user will have i the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
-        /// <returns>The list of users for the specified project</returns>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser AddUserToProject(int projectId, int userId, List<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
@@ -1331,7 +1331,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", rolesNames), totalAttempts, baseRetryIntervallMilliseconds));
 
             ProjectMembership projectMembership = new ProjectMembership()
             {
@@ -1341,10 +1341,10 @@ namespace biz.dfch.CS.Redmine.Client
             };
 
             IList<Role> roles = this.GetRoles(totalAttempts, baseRetryIntervallMilliseconds);
-            foreach(string roleName in rolesNames)
+            foreach (string roleName in rolesNames)
             {
-                Role role = roles.FirstOrDefault(r=>r.Name==roleName);
-                Contract.Assert(null!=role, string.Format("No role wich name {0} found", roleName));
+                Role role = roles.FirstOrDefault(r => r.Name == roleName);
+                Contract.Assert(null != role, string.Format("No role wich name {0} found", roleName));
                 MembershipRole membershipRole = new MembershipRole() { Id = role.Id };
                 projectMembership.Roles.Add(membershipRole);
             }
@@ -1360,6 +1360,51 @@ namespace biz.dfch.CS.Redmine.Client
             ProjectUser projectUser = RedmineClient.CreateProjectUser(users, createdMembership);
 
             return projectUser;
+        }
+
+        /// <summary>
+        /// Removes a user from a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>True if the user could be removed from the project</returns>
+        public bool RemoveUserFromProject(int projectId, int userId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(projectId > 0, "No project id defined");
+            Contract.Requires(userId > 0, "No user id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.RemoveUserFromProject({0}, {1}, {2}, {3})", projectId, userId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<ProjectMembership> memberships = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
+                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            ProjectMembership toDelete = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
+            if (toDelete == null)
+            {
+                //If there is no ProjectMembership with the specified user and project throw an exception so that the behaviour is the same as for other redmine objects
+                throw new RedmineException("Not Found");
+            }
+
+            bool success = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.DeleteObject<ProjectMembership>(toDelete.Id.ToString(), new NameValueCollection());
+                return true;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return success;
         }
 
         /// <summary>
