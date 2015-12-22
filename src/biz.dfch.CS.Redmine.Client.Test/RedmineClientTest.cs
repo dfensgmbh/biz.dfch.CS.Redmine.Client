@@ -120,7 +120,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Project project = redmineClient.GetProjectByIdentifier(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(project, "No user received");
-            Assert.AreEqual(TestEnvironment.ProjectIdentifier1, project.Identifier, "Wrong priority returned");
+            Assert.AreEqual(TestEnvironment.ProjectIdentifier1, project.Identifier, "Wrong project returned");
         }
 
         [TestMethod]
@@ -130,9 +130,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(project, "Project found with invalid identifier");
+            try
+            {
+                Project project = redmineClient.GetProjectByIdentifier("NotAProject", TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -773,7 +779,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            User user = redmineClient.GetUser(TestEnvironment.UserId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            User user = redmineClient.GetUser(TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(user, "No user received");
         }
@@ -806,7 +812,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             User user = redmineClient.GetUserByLogin(TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(user, "No user received");
-            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong priority returned");
+            Assert.AreEqual(TestEnvironment.UserLogin1, user.Login, "Wrong user returned");
         }
 
         [TestMethod]
@@ -817,9 +823,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(user, "User found with invalid login");
+            try
+            {
+                User user = redmineClient.GetUserByLogin(login, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -926,6 +938,230 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         #endregion Users
 
+        #region Memberships
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUsersOfProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(projectUsers, "No project users received");
+            Assert.IsTrue(projectUsers.Count > 0, "Project user list is empty");
+            foreach (ProjectUser projectUser in projectUsers)
+            {
+                Assert.IsNotNull(projectUser.Roles, "No roles received for user");
+                Assert.IsTrue(projectUser.Roles.Count > 0, "Role list empty for user");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetUsersOfProjectUsingKeys()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(projectUsers, "No project users received");
+            Assert.IsTrue(projectUsers.Count > 0, "Project user list is empty");
+            foreach (ProjectUser projectUser in projectUsers)
+            {
+                Assert.IsNotNull(projectUser.Roles, "No roles received for user");
+                Assert.IsTrue(projectUser.Roles.Count>0, "Role list empty for user");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void AddUserToProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsers.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User already in project befor update");
+
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2, 
+                new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(addedProjectUser.Roles, "No roles received for user");
+            Assert.IsTrue(addedProjectUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(addedProjectUser.Roles.Contains("Reporter"), "User has no the defined role in the project");
+
+            IList<ProjectUser> projectUsersAfterUpdate = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterUpdate.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User was not added to project");
+
+            redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void AddUserToProjectUsingKeys()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsers.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User already in project befor update");
+
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin2,
+                new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(addedProjectUser.Roles, "No roles received for user");
+            Assert.IsTrue(addedProjectUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(addedProjectUser.Roles.Contains("Reporter"), "User has no the defined role in the project");
+
+            IList<ProjectUser> projectUsersAfterUpdate = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterUpdate.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User was not added to project");
+
+            redmineClient.RemoveUserFromProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRolesOfUserInProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(userRoles.Contains("Developer"), "User has no the defined role in the project");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRolesOfUserInProjectUsingKeys()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(userRoles.Contains("Developer"), "User has no the defined role in the project");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateRolesOfUserInProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsFalse(userRoles.Contains("Reporter"), "User has role befoer update");
+
+            userRoles.Add("Reporter");
+            ProjectUser updatedUser = redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No project user received");
+            Assert.IsNotNull(updatedUser.Roles, "No roles received for user");
+            Assert.IsTrue(updatedUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUser.Roles.Contains("Reporter"), "Role was not added in returned object");
+
+            IList<string> updatedUserRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUserRoles, "No roles received for user");
+            Assert.IsTrue(updatedUserRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUserRoles.Contains("Reporter"), "Role was not added correctly");
+
+            userRoles.Remove("Reporter");
+            redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateRolesOfUserInProjectUsingKeys()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsFalse(userRoles.Contains("Reporter"), "User has role befoer update");
+
+            userRoles.Add("Reporter");
+            ProjectUser updatedUser = redmineClient.UpdateUserRoles(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No project user received");
+            Assert.IsNotNull(updatedUser.Roles, "No roles received for user");
+            Assert.IsTrue(updatedUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUser.Roles.Contains("Reporter"), "Role was not added in returned object");
+
+            IList<string> updatedUserRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUserRoles, "No roles received for user");
+            Assert.IsTrue(updatedUserRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUserRoles.Contains("Reporter"), "Role was not added correctly");
+
+            userRoles.Remove("Reporter");
+            redmineClient.UpdateUserRoles(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void RemoveUserFromProject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+           
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsersAfterAdd = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterAdd.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User not in project befor remove");
+
+            bool success = redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsTrue(success, "Did not receive success");
+            IList<ProjectUser> projectUsersAfterRemove = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsersAfterRemove.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User in project after remove");      
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void RemoveUserFromProjectUsingKeys()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin2,
+                new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsersAfterAdd = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterAdd.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User not in project befor remove");
+
+            bool success = redmineClient.RemoveUserFromProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.UserLogin2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsTrue(success, "Did not receive success");
+            IList<ProjectUser> projectUsersAfterRemove = redmineClient.GetUsersInProject(TestEnvironment.ProjectIdentifier1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsersAfterRemove.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User in project after remove");
+        }
+
+        #endregion Memberships
+
         #region Load Items Source Objects
 
         [TestMethod]
@@ -963,9 +1199,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(state, "State found with invalid name");
+            try
+            {
+                IssueStatus state = redmineClient.GetIssueStateByName(stateName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -1003,9 +1245,15 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-
-            Assert.IsNull(priority, "Priority found with invalid name");
+            try
+            {
+                IssuePriority priority = redmineClient.GetIssuePriorityByName(priorityName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         [TestMethod]
@@ -1032,7 +1280,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(tracker, "No tracker received");
-            Assert.AreEqual(trackerName, tracker.Name, "Wrong priority returned");
+            Assert.AreEqual(trackerName, tracker.Name, "Wrong tracker returned");
         }
 
         [TestMethod]
@@ -1043,9 +1291,61 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            try
+            {
+                Tracker tracker = redmineClient.GetTrackerByName(trackerName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
+        }
 
-            Assert.IsNull(tracker, "Tracker found with invalid name");
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleList()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<Role> roles = redmineClient.GetRoles(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(roles, "No roles received");
+            Assert.IsTrue(roles.Count > 0, "List of roles is empty");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleByName()
+        {
+            string roleName = "Developer";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Role role = redmineClient.GetRoleByName(roleName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(role, "No role received");
+            Assert.AreEqual(roleName, role.Name, "Wrong role returned");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetRoleInvalidName()
+        {
+            string roleName = "NotARole";
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            try
+            {
+                Role role = redmineClient.GetRoleByName(roleName, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                Assert.IsTrue(false, "Should throw an exception and never reach this line");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Not Found"));
+            }
         }
 
         #endregion Load Items Source Objects
