@@ -719,7 +719,7 @@ namespace biz.dfch.CS.Redmine.Client
                 }
 
                 // Set Priority
-                if (!string.IsNullOrEmpty(issueData.StateName))
+                if (!string.IsNullOrEmpty(issueData.PriorityName))
                 {
                     IList<IssuePriority> priorities = this.GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
                     IssuePriority priority = priorities.FirstOrDefault(p => p.Name == issueData.PriorityName);
