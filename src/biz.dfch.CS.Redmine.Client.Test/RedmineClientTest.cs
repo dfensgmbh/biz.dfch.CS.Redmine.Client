@@ -1000,7 +1000,31 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void UpdateRolesOfUserInProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsFalse(userRoles.Contains("Reporter"), "User has role befoer update");
+
+            userRoles.Add("Reporter");
+            ProjectUser updatedUser = redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No project user received");
+            Assert.IsNotNull(updatedUser.Roles, "No roles received for user");
+            Assert.IsTrue(updatedUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUser.Roles.Contains("Reporter"), "Role was not added in returned object");
+
+            IList<string> updatedUserRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUserRoles, "No roles received for user");
+            Assert.IsTrue(updatedUserRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUserRoles.Contains("Reporter"), "Role was not added correctly");
+
+            userRoles.Remove("Reporter");
+            redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
 
         [TestMethod]

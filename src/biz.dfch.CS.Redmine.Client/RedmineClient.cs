@@ -1315,11 +1315,11 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         /// <param name="projectId">The id of the project</param>
         /// <param name="userId">The id of the user</param>
-        /// <param name="rolesNames">The names of the roles the user will have i the project</param>
+        /// <param name="rolesNames">The names of the roles the user will have in the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The info objec for the user in the project</returns>
-        public ProjectUser AddUserToProject(int projectId, int userId, List<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public ProjectUser AddUserToProject(int projectId, int userId, IList<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -1390,6 +1390,67 @@ namespace biz.dfch.CS.Redmine.Client
             }
 
             return projectUser.Roles;
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="rolesNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(projectId > 0, "No project id defined");
+            Contract.Requires(userId > 0, "No user id defined");
+            Contract.Requires(null != rolesNames, "No roles defined");
+            Contract.Requires(rolesNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", rolesNames), totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<ProjectMembership> memberships = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
+                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            ProjectMembership toUpdate = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
+            if (toUpdate == null)
+            {
+                //If there is no ProjectMembership with the specified user and project throw an exception so that the behaviour is the same as for other redmine objects
+                throw new RedmineException("Not Found");
+            }
+
+            IList<Role> roles = this.GetRoles(totalAttempts, baseRetryIntervallMilliseconds);
+            toUpdate.Roles = new List<MembershipRole>();
+            foreach (string roleName in rolesNames)
+            {
+                Role role = roles.FirstOrDefault(r => r.Name == roleName);
+                Contract.Assert(null != role, string.Format("No role wich name {0} found", roleName));
+                MembershipRole membershipRole = new MembershipRole() { Id = role.Id };
+                toUpdate.Roles.Add(membershipRole);
+            }
+
+            ProjectMembership updatedMembership = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                redmineManager.UpdateObject<ProjectMembership>(toUpdate.Id.ToString(), toUpdate, projectId.ToString());
+                return redmineManager.GetObject<ProjectMembership>(toUpdate.Id.ToString(), new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
+
+            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+            ProjectUser projectUser = RedmineClient.CreateProjectUser(users, updatedMembership);
+
+            return projectUser;
         }
 
         /// <summary>
