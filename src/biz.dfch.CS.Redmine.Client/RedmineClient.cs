@@ -1266,6 +1266,36 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Gets the list of users for the specified project
         /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <returns>The list of users for the specified project</returns>
+        public IList<ProjectUser> GetUsersInProject(string projectIdentifier)
+        {
+            return this.GetUsersInProject(projectIdentifier, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of users for the specified project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of users for the specified project</returns>
+        public IList<ProjectUser> GetUsersInProject(string projectIdentifier, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(projectIdentifier), "No project idendifier defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Project project = this.GetProjectByIdentifier(projectIdentifier, totalAttempts, baseRetryIntervallMilliseconds);
+            return this.GetUsersInProject(project.Id, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of users for the specified project
+        /// </summary>
         /// <param name="projectId">The id of the project to get the users for</param>
         /// <returns>The list of users for the specified project</returns>
         public IList<ProjectUser> GetUsersInProject(int projectId)
@@ -1303,7 +1333,7 @@ namespace biz.dfch.CS.Redmine.Client
             List<ProjectUser> projectUsers = new List<ProjectUser>();
             foreach (ProjectMembership membership in memberships.Where(m => null != m.User)) //ignore memberships of groups
             {
-                ProjectUser projectUser = RedmineClient.CreateProjectUser(users, membership);
+                ProjectUser projectUser = RedmineClient.ToProjectUser(users, membership);
                 projectUsers.Add(projectUser);
             }
 
@@ -1313,25 +1343,76 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Add a user to a project
         /// </summary>
-        /// <param name="projectId">The id of the project</param>
-        /// <param name="userId">The id of the user</param>
-        /// <param name="rolesNames">The names of the roles the user will have in the project</param>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, IList<string> roleNames)
+        {
+            return this.AddUserToProject(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The info objec for the user in the project</returns>
-        public ProjectUser AddUserToProject(int projectId, int userId, IList<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, IList<string> roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(projectIdentifier), "No project identifier defined");
+            Contract.Requires(!string.IsNullOrEmpty(userLogin), "No user login defined");
+            Contract.Requires(null != roleNames, "No roles defined");
+            Contract.Requires(roleNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Project project = this.GetProjectByIdentifier(projectIdentifier, totalAttempts, baseRetryIntervallMilliseconds);
+            User user = this.GetUserByLogin(userLogin, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return this.AddUserToProject(project.Id, user.Id, roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, IList<string> roleNames)
+        {
+            return this.AddUserToProject(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, IList<string> roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(projectId > 0, "No project id defined");
             Contract.Requires(userId > 0, "No user id defined");
-            Contract.Requires(null != rolesNames, "No roles defined");
-            Contract.Requires(rolesNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(null != roleNames, "No roles defined");
+            Contract.Requires(roleNames.Count > 0, "Role list can not be empty");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", rolesNames), totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", roleNames), totalAttempts, baseRetryIntervallMilliseconds));
 
             ProjectMembership projectMembership = new ProjectMembership()
             {
@@ -1341,7 +1422,7 @@ namespace biz.dfch.CS.Redmine.Client
             };
 
             IList<Role> roles = this.GetRoles(totalAttempts, baseRetryIntervallMilliseconds);
-            foreach (string roleName in rolesNames)
+            foreach (string roleName in roleNames)
             {
                 Role role = roles.FirstOrDefault(r => r.Name == roleName);
                 Contract.Assert(null != role, string.Format("No role wich name {0} found", roleName));
@@ -1356,9 +1437,55 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
-            ProjectUser projectUser = RedmineClient.CreateProjectUser(users, createdMembership);
+            ProjectUser projectUser = RedmineClient.ToProjectUser(users, createdMembership);
 
             return projectUser;
+        }
+
+        /// <summary>
+        /// Gets the roles of a user in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <returns>The roles of a user in a project</returns>
+        public IList<string> GetUserRoles(string projectIdentifier, string userLogin)
+        {
+            return this.GetUserRoles(projectIdentifier, userLogin, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the roles of a user in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The roles of a user in a project</returns>
+        public IList<string> GetUserRoles(string projectIdentifier, string userLogin, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(projectIdentifier), "No project identifier defined");
+            Contract.Requires(!string.IsNullOrEmpty(userLogin), "No user login defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Project project = this.GetProjectByIdentifier(projectIdentifier, totalAttempts, baseRetryIntervallMilliseconds);
+            User user = this.GetUserByLogin(userLogin, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return this.GetUserRoles(project.Id, user.Id, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the roles of a user in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <returns>The roles of a user in a project</returns>
+        public IList<string> GetUserRoles(int projectId, int userId)
+        {
+            return this.GetUserRoles(projectId, userId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1395,25 +1522,76 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Updates the roles a user has in a project
         /// </summary>
-        /// <param name="projectId">The id of the project</param>
-        /// <param name="userId">The id of the user</param>
-        /// <param name="rolesNames">The names of the roles the user will have in the project</param>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, IList<string> roleNames)
+        {
+            return this.UpdateUserRoles(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The info objec for the user in the project</returns>
-        public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> rolesNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, IList<string> roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(projectIdentifier), "No project identifier defined");
+            Contract.Requires(!string.IsNullOrEmpty(userLogin), "No user login defined");
+            Contract.Requires(null != roleNames, "No roles defined");
+            Contract.Requires(roleNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Project project = this.GetProjectByIdentifier(projectIdentifier, totalAttempts, baseRetryIntervallMilliseconds);
+            User user = this.GetUserByLogin(userLogin, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return this.UpdateUserRoles(project.Id, user.Id, roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> roleNames)
+        {
+            return this.UpdateUserRoles(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
             Contract.Requires(projectId > 0, "No project id defined");
             Contract.Requires(userId > 0, "No user id defined");
-            Contract.Requires(null != rolesNames, "No roles defined");
-            Contract.Requires(rolesNames.Count > 0, "Role list can not be empty");
+            Contract.Requires(null != roleNames, "No roles defined");
+            Contract.Requires(roleNames.Count > 0, "Role list can not be empty");
             Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", rolesNames), totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3}, {4})", projectId, userId, string.Join("|", roleNames), totalAttempts, baseRetryIntervallMilliseconds));
 
             IList<ProjectMembership> memberships = RedmineClient.InvokeWithRetries(() =>
             {
@@ -1432,7 +1610,7 @@ namespace biz.dfch.CS.Redmine.Client
 
             IList<Role> roles = this.GetRoles(totalAttempts, baseRetryIntervallMilliseconds);
             toUpdate.Roles = new List<MembershipRole>();
-            foreach (string roleName in rolesNames)
+            foreach (string roleName in roleNames)
             {
                 Role role = roles.FirstOrDefault(r => r.Name == roleName);
                 Contract.Assert(null != role, string.Format("No role wich name {0} found", roleName));
@@ -1448,9 +1626,55 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
-            ProjectUser projectUser = RedmineClient.CreateProjectUser(users, updatedMembership);
+            ProjectUser projectUser = RedmineClient.ToProjectUser(users, updatedMembership);
 
             return projectUser;
+        }
+
+        /// <summary>
+        /// Removes a user from a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <returns>True if the user could be removed from the project</returns>
+        public bool RemoveUserFromProject(string projectIdentifier, string userLogin)
+        {
+            return this.RemoveUserFromProject(projectIdentifier, userLogin, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Removes a user from a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>True if the user could be removed from the project</returns>
+        public bool RemoveUserFromProject(string projectIdentifier, string userLogin, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(!string.IsNullOrEmpty(projectIdentifier), "No project identifier defined");
+            Contract.Requires(!string.IsNullOrEmpty(userLogin), "No user login defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Project project = this.GetProjectByIdentifier(projectIdentifier, totalAttempts, baseRetryIntervallMilliseconds);
+            User user = this.GetUserByLogin(userLogin, totalAttempts, baseRetryIntervallMilliseconds);
+
+            return this.RemoveUserFromProject(project.Id, user.Id, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Removes a user from a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <returns>True if the user could be removed from the project</returns>
+        public bool RemoveUserFromProject(int projectId, int userId)
+        {
+            return this.RemoveUserFromProject(projectId, userId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1504,7 +1728,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="users">The list of all users</param>
         /// <param name="membership">The project membership</param>
         /// <returns>The project user created from the project membership</returns>
-        private static ProjectUser CreateProjectUser(IList<User> users, ProjectMembership membership)
+        private static ProjectUser ToProjectUser(IList<User> users, ProjectMembership membership)
         {
             User user = users.FirstOrDefault(u => u.Id == membership.User.Id);
             ProjectUser projectUser = new ProjectUser();
