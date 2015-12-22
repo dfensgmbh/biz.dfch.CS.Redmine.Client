@@ -986,7 +986,14 @@ namespace biz.dfch.CS.Redmine.Client.Test
         [TestCategory("SkipOnTeamCity")]
         public void GetRolesOfUserInProject()
         {
-            Assert.IsTrue(false, "Not yet implemented");
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(userRoles.Contains("Developer"), "User has no the defined role in the project");
         }
 
         [TestMethod]

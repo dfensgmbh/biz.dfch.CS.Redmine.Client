@@ -1356,10 +1356,40 @@ namespace biz.dfch.CS.Redmine.Client
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
-            List<ProjectUser> projectUsers = new List<ProjectUser>();
             ProjectUser projectUser = RedmineClient.CreateProjectUser(users, createdMembership);
 
             return projectUser;
+        }
+
+        /// <summary>
+        /// Gets the roles of a user in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The roles of a user in a project</returns>
+        public IList<string> GetUserRoles(int projectId, int userId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(projectId > 0, "No project id defined");
+            Contract.Requires(userId > 0, "No user id defined");
+            Contract.Requires(totalAttempts > 0, "TotalAttempts must be greater than 0");
+            Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
+            #endregion Contract
+
+            Trace.WriteLine(string.Format("RedmineClient.AddUserToProject({0}, {1}, {2}, {3})", projectId, userId, totalAttempts, baseRetryIntervallMilliseconds));
+
+            IList<ProjectUser> projectUsers = this.GetUsersInProject(projectId, totalAttempts, baseRetryIntervallMilliseconds);
+            ProjectUser projectUser = projectUsers.FirstOrDefault(pu => pu.UserId == userId);
+            if (null == projectUser)
+            {
+                //If there is no ProjectMembership with the specified user and project throw an exception so that the behaviour is the same as for other redmine objects
+                throw new RedmineException("Not Found");
+            }
+
+            return projectUser.Roles;
         }
 
         /// <summary>
