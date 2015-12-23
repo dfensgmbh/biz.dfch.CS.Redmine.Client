@@ -23,7 +23,16 @@ using System.Threading.Tasks;
 namespace biz.dfch.CS.Redmine.Client.Model
 {
     public class IssueMetaData
-    {   
+    {
+
+        public const string AssignedToLoginKey = "AssignedToLogin";
+        public const string ProjectIdentifierKey = "ProjectIdentifier";
+        public const string PriorityNameKey = "PriorityName";
+        public const string StateNameKey = "StateName";
+        public const string TrackerNameKey = "TrackerName";
+        public const string NotesKey = "Notes";
+        public const string PrivateNotesKey = "PrivateNotes";
+
         /// <summary>
         /// Login of the user to who the issue is assigend
         /// </summary>
@@ -52,5 +61,20 @@ namespace biz.dfch.CS.Redmine.Client.Model
         /// Defines if the the notes entry will be private or not
         /// </summary>
         public bool PrivateNotes { get; set; }
+
+        public IssueMetaData()
+        {
+        }
+
+        public IssueMetaData(Dictionary<string, object> values)
+        {
+            this.AssignedToLogin = Util.GetValue<string>(values, IssueMetaData.AssignedToLoginKey);
+            this.ProjectIdentifier = Util.GetValue<string>(values, IssueMetaData.ProjectIdentifierKey);
+            this.PriorityName = Util.GetValue<string>(values, IssueMetaData.PriorityNameKey);
+            this.StateName = Util.GetValue<string>(values, IssueMetaData.StateNameKey);
+            this.TrackerName = Util.GetValue<string>(values, IssueMetaData.TrackerNameKey);
+            this.Notes = Util.GetValue<string>(values, IssueMetaData.NotesKey);
+            this.PrivateNotes = Util.GetValue<bool>(values, IssueMetaData.PrivateNotesKey);
+        }
     }
 }

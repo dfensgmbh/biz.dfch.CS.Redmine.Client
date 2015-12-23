@@ -532,7 +532,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue)
         {
-            return this.CreateIssue(issue, null);
+            return this.CreateIssue(issue, (IssueMetaData)null);
         }
 
         /// <summary>
@@ -544,7 +544,47 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
-            return this.CreateIssue(issue, null, totalAttempts, baseRetryIntervallMilliseconds);
+            return this.CreateIssue(issue, (IssueMetaData)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, object issueData)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue createdIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                createdIssue = this.CreateIssue(issue, (Dictionary<string, object>)issueData);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                createdIssue = this.CreateIssue(issue, (AttachmentData)issueData);
+            }
+            return createdIssue;
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, Dictionary<string, object> issueData)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.CreateIssue(issue, issueDataObject);
         }
 
         /// <summary>
@@ -556,6 +596,50 @@ namespace biz.dfch.CS.Redmine.Client
         public Issue CreateIssue(Issue issue, IssueMetaData issueData)
         {
             return this.CreateIssue(issue, issueData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, object issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue createdIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                createdIssue = this.CreateIssue(issue, (Dictionary<string, object>)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                createdIssue = this.CreateIssue(issue, (AttachmentData)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return createdIssue;
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, Dictionary<string, object> issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.CreateIssue(issue, issueDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -602,7 +686,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue)
         {
-            return this.UpdateIssue(issue, null);
+            return this.UpdateIssue(issue, (IssueMetaData)null);
         }
 
         /// <summary>
@@ -614,7 +698,47 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
-            return this.UpdateIssue(issue, null, totalAttempts, baseRetryIntervallMilliseconds);
+            return this.UpdateIssue(issue, (IssueMetaData)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, object issueData)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue updatedIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                updatedIssue = this.UpdateIssue(issue, (Dictionary<string, object>)issueData);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                updatedIssue = this.UpdateIssue(issue, (IssueMetaData)issueData);
+            }
+            return updatedIssue;
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, Dictionary<string, object> issueData)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.UpdateIssue(issue, issueDataObject);
         }
 
         /// <summary>
@@ -626,6 +750,50 @@ namespace biz.dfch.CS.Redmine.Client
         public Issue UpdateIssue(Issue issue, IssueMetaData issueData)
         {
             return this.UpdateIssue(issue, issueData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, object issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue updatedIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                updatedIssue = this.UpdateIssue(issue, (Dictionary<string, object>)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                updatedIssue = this.UpdateIssue(issue, (IssueMetaData)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return updatedIssue;
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, Dictionary<string, object> issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.UpdateIssue(issue, issueDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -942,7 +1110,7 @@ namespace biz.dfch.CS.Redmine.Client
             return attachment;
         }
 
-         /// <summary>
+        /// <summary>
         /// Creates a new attachment and appends it to an existing issue
         /// </summary>
         /// <param name="issueId">Issue to append the attachment</param>
@@ -959,7 +1127,7 @@ namespace biz.dfch.CS.Redmine.Client
             AttachmentData attachmentDataObject = new AttachmentData(attachmentData);
             return this.CreateAttachment(issueId, attachmentDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
-        
+
         /// <summary>
         /// Creates a new attachment and appends it to an existing issue
         /// </summary>
