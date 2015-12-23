@@ -24,10 +24,29 @@ namespace biz.dfch.CS.Redmine.Client.Model
 {
     public class IssueQueryParameters
     {
+        public const string AssignedToLoginKey = "AssignedToLogin";
+        public const string ProjectIdentifierKey = "ProjectIdentifier";
+        public const string PriorityNameKey = "PriorityName";
+        public const string StateNameKey = "StateName";
+        public const string TrackerNameKey = "TrackerName";
+
         public string ProjectIdentifier { get; set; }
         public string StateName { get; set; }
-        public string AssigneeLogin { get; set; }
+        public string AssignedToLogin { get; set; }
         public string TrackerName { get; set; }
         public string PriorityName { get; set; }
+
+         public IssueQueryParameters()
+        {
+        }
+
+         public IssueQueryParameters(Dictionary<string, object> values)
+        {
+            this.AssignedToLogin = Util.GetValue<string>(values, IssueQueryParameters.AssignedToLoginKey);
+            this.ProjectIdentifier = Util.GetValue<string>(values, IssueQueryParameters.ProjectIdentifierKey);
+            this.PriorityName = Util.GetValue<string>(values, IssueQueryParameters.PriorityNameKey);
+            this.StateName = Util.GetValue<string>(values, IssueQueryParameters.StateNameKey);
+            this.TrackerName = Util.GetValue<string>(values, IssueQueryParameters.TrackerNameKey);
+        }
     }
 }

@@ -351,7 +351,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IList<Issue> issues = redmineClient.GetIssues(null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            IList<Issue> issues = redmineClient.GetIssues(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(issues, "No issues received");
             Assert.IsTrue(issues.Count > 0, "Issue list is empty");
@@ -398,6 +398,30 @@ namespace biz.dfch.CS.Redmine.Client.Test
             {
                 Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
                 Assert.AreEqual(queryParameters.StateName, issue.Status.Name, "Issue with wrong state loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccordingToStateUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            string stateName = "In Progress";
+            object queryParameters = new Dictionary<string, object>()
+            {
+                {IssueQueryParameters.StateNameKey, stateName},
+                {IssueQueryParameters.ProjectIdentifierKey,TestEnvironment.ProjectIdentifier1},
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(stateName, issue.Status.Name, "Issue with wrong state loaded");
             }
         }
 
@@ -457,7 +481,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueQueryParameters queryParameters = new IssueQueryParameters()
             {
                 ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
-                AssigneeLogin = "test",
+                AssignedToLogin = "test",
             };
             IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -714,7 +738,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             createdIssue.Subject = "Update Issue";
             createdIssue.DueDate = DateTime.Today.AddDays(5);
             createdIssue.IsPrivate = true;
-            
+
             string assignedToLogin = TestEnvironment.UserLogin1;
             string priorityName = "Urgent";
             string trackerName = "Bug";
@@ -731,7 +755,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                 {IssueMetaData.NotesKey, notes},
                 {IssueMetaData.PrivateNotesKey, true},
             };
-            
+
             Issue updatedIssue = redmineClient.UpdateIssue(createdIssue, updateMetaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(updatedIssue, "No issue received");

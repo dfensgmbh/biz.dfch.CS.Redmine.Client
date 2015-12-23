@@ -419,13 +419,111 @@ namespace biz.dfch.CS.Redmine.Client
         #region Issues
 
         /// <summary>
-        /// Gets the list of issues in a given state (or all state if no state is defiened) for the specified project or for all projects if project id is not specified
+        /// Gets the list of issues
+        /// </summary>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues()
+        {
+            return this.GetIssues((IssueQueryParameters)null);
+        }
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(object queryParameters)
+        {
+            #region Contract
+            Contract.Requires((queryParameters is Dictionary<string, object>) || (queryParameters is IssueQueryParameters), "queryParameters must be Dictionary<string, object> or IssueQueryParameters");
+            #endregion Contract
+
+            IList<Issue> issues = null;
+            if (queryParameters is Dictionary<string, object>)
+            {
+                issues = this.GetIssues((Dictionary<string, object>)queryParameters);
+            }
+            else if (queryParameters is IssueMetaData)
+            {
+                issues = this.GetIssues((IssueQueryParameters)queryParameters);
+            }
+            return issues;
+        }
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(Dictionary<string, object> queryParameters)
+        {
+            #region Contract
+            Contract.Requires(null != queryParameters, "No query parameters defined");
+            #endregion Contract
+
+            IssueQueryParameters queryParameterObject = new IssueQueryParameters(queryParameters);
+            return this.GetIssues(queryParameterObject);
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
         /// </summary>
         /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
         /// <returns>The list of issues for a project</returns>
         public IList<Issue> GetIssues(IssueQueryParameters queryParameters)
         {
             return this.GetIssues(queryParameters, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            return this.GetIssues((IssueQueryParameters)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of issues
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(object queryParameters, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((queryParameters is Dictionary<string, object>) || (queryParameters is IssueQueryParameters), "queryParameters must be Dictionary<string, object> or IssueQueryParameters");
+            #endregion Contract
+
+            IList<Issue> issues = null;
+            if (queryParameters is Dictionary<string, object>)
+            {
+                issues = this.GetIssues((Dictionary<string, object>)queryParameters, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (queryParameters is IssueMetaData)
+            {
+                issues = this.GetIssues((IssueQueryParameters)queryParameters, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return issues;
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(Dictionary<string, object> queryParameters, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != queryParameters, "No query parameters defined");
+            #endregion Contract
+
+            IssueQueryParameters queryParameterObject = new IssueQueryParameters(queryParameters);
+            return this.GetIssues(queryParameterObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -475,10 +573,10 @@ namespace biz.dfch.CS.Redmine.Client
                             Tracker tracker = this.GetTrackerByName(queryParameters.TrackerName);
                             parameters.Add(RedmineKeys.TRACKER_ID, tracker.Id.ToString());
                         }
-                        if (!string.IsNullOrEmpty(queryParameters.AssigneeLogin))
+                        if (!string.IsNullOrEmpty(queryParameters.AssignedToLogin))
                         {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssigneeLogin));
-                            User assignee = this.GetUserByLogin(queryParameters.AssigneeLogin);
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssignedToLogin));
+                            User assignee = this.GetUserByLogin(queryParameters.AssignedToLogin);
                             parameters.Add(RedmineKeys.ASSIGNED_TO_ID, assignee.Id.ToString());
                         }
                     }
