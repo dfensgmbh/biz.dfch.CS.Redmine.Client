@@ -146,6 +146,7 @@
   <ItemGroup>
     <Compile Include="Model\AttachmentData.cs" />
     <Compile Include="Model\IssueMetaData.cs" />
+    <Compile Include="Model\IssueQueryParameters.cs" />
     <Compile Include="Model\JournalData.cs" />
     <Compile Include="Model\ProjectUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

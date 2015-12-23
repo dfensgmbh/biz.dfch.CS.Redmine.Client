@@ -75,7 +75,8 @@ namespace biz.dfch.CS.Redmine.Client
         /// </summary>
         public bool IsLoggedIn { get; private set; }
         /// <summary>
-        /// The page size to get in a list request (request will be repeated until all items are loaded)
+        /// The page size to get in a list request (request will be repeated until all items are loaded).
+        /// Can at most be 100 in current redmine version (3.2.0), should be configurable later.
         /// </summary>
         public int PageSize { get; set; }
 
@@ -90,6 +91,7 @@ namespace biz.dfch.CS.Redmine.Client
         {
             this.TotalAttempts = RedmineClient.TOTAL_ATTEMPTS;
             this.BaseRetryIntervallMilliseconds = RedmineClient.BASE_RETRY_INTERVAL_MILLISECONDS;
+            this.PageSize = RedmineClient.PAGE_SIZE;
         }
 
         #endregion Constructors
@@ -105,20 +107,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>True if the user could be authorized on the server</returns>
         public bool Login(string redmineUrl, string username, string password)
         {
-            return this.Login(redmineUrl, username, password, RedmineClient.PAGE_SIZE, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
-        }
-
-        /// <summary>
-        ///  Checks if the user can be authorized on the server
-        /// </summary>
-        /// <param name="redmineUrl">Url of the redmine api</param>
-        /// <param name="username">The user name for authentication</param>
-        /// <param name="password">The password for authentication</param>
-        /// <param name="pageSize">The page size to get in a list request (request will be repeated until all items are loaded)</param>
-        /// <returns>True if the user could be authorized on the server</returns>
-        public bool Login(string redmineUrl, string username, string password, int pageSize)
-        {
-            return this.Login(redmineUrl, username, password, pageSize, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.Login(redmineUrl, username, password, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -131,21 +120,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>True if the user could be authorized on the server</returns>
         public bool Login(string redmineUrl, string username, string password, int totalAttempts, int baseRetryIntervallMilliseconds)
-        {
-            return this.Login(redmineUrl, username, password, RedmineClient.PAGE_SIZE, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
-        }
-
-        /// <summary>
-        ///  Checks if the user can be authorized on the server
-        /// </summary>
-        /// <param name="redmineUrl">Url of the redmine api</param>
-        /// <param name="username">The user name for authentication</param>
-        /// <param name="password">The password for authentication</param>
-        /// <param name="pageSize">The page size to get in a list request (request will be repeated until all items are loaded)</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
-        /// <returns>True if the user could be authorized on the server</returns>
-        public bool Login(string redmineUrl, string username, string password, int pageSize, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(!string.IsNullOrEmpty(redmineUrl), "No redmine url defined");
@@ -174,7 +148,6 @@ namespace biz.dfch.CS.Redmine.Client
                 this.RedmineUrl = redmineUrl;
                 this.Username = username;
                 this.Password = password;
-                this.PageSize = 100;
             }
             else
             {
@@ -446,23 +419,23 @@ namespace biz.dfch.CS.Redmine.Client
         #region Issues
 
         /// <summary>
-        /// Gets the list of issues for the specified project or for all projects if project id is not specified
+        /// Gets the list of issues in a given state (or all state if no state is defiened) for the specified project or for all projects if project id is not specified
         /// </summary>
-        /// <param name="projectId">The id of the project to get the issues for</param>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
         /// <returns>The list of issues for a project</returns>
-        public IList<Issue> GetIssues(int? projectId)
+        public IList<Issue> GetIssues(IssueQueryParameters queryParameters)
         {
-            return this.GetIssues(projectId, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.GetIssues(queryParameters, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
-        /// Gets the list of issues for the specified project or for all projects if project id is not specified
+        /// Gets the list of issues matching the query parameters (null values are ignored)
         /// </summary>
-        /// <param name="projectId">The id of the project to get the issues for</param>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The list of issues for a project</returns>
-        public IList<Issue> GetIssues(int? projectId, int totalAttempts, int baseRetryIntervallMilliseconds)
+        public IList<Issue> GetIssues(IssueQueryParameters queryParameters, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
@@ -470,15 +443,44 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", projectId, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", "queryParameters", totalAttempts, baseRetryIntervallMilliseconds));
 
             IList<Issue> issues = RedmineClient.InvokeWithRetries(() =>
                 {
                     RedmineManager redmineManager = this.GetRedmineManager();
                     NameValueCollection parameters = new NameValueCollection();
-                    if (projectId.HasValue)
+                    if (null != queryParameters)
                     {
-                        parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
+                        if (!string.IsNullOrEmpty(queryParameters.ProjectIdentifier))
+                        {
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Project: {0}", queryParameters.ProjectIdentifier));
+                            Project project = this.GetProjectByIdentifier(queryParameters.ProjectIdentifier);
+                            parameters.Add(RedmineKeys.PROJECT_ID, project.Id.ToString());
+                        }
+                        if (!string.IsNullOrEmpty(queryParameters.StateName))
+                        {
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.StateName));
+                            IssueStatus state = this.GetIssueStateByName(queryParameters.StateName);
+                            parameters.Add(RedmineKeys.STATUS_ID, state.Id.ToString());
+                        }
+                        if (!string.IsNullOrEmpty(queryParameters.PriorityName))
+                        {
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Priority: {0}", queryParameters.PriorityName));
+                            IssuePriority priority = this.GetIssuePriorityByName(queryParameters.PriorityName);
+                            parameters.Add(RedmineKeys.PRIORITY_ID, priority.Id.ToString());
+                        }
+                        if (!string.IsNullOrEmpty(queryParameters.TrackerName))
+                        {
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.TrackerName));
+                            Tracker tracker = this.GetTrackerByName(queryParameters.TrackerName);
+                            parameters.Add(RedmineKeys.TRACKER_ID, tracker.Id.ToString());
+                        }
+                        if (!string.IsNullOrEmpty(queryParameters.AssigneeLogin))
+                        {
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssigneeLogin));
+                            User assignee = this.GetUserByLogin(queryParameters.AssigneeLogin);
+                            parameters.Add(RedmineKeys.ASSIGNED_TO_ID, assignee.Id.ToString());
+                        }
                     }
                     return redmineManager.GetTotalObjectList<Issue>(parameters);
                 }, totalAttempts, baseRetryIntervallMilliseconds);
