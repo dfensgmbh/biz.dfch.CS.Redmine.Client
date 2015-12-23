@@ -364,7 +364,33 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IList<Issue> issues = redmineClient.GetIssues(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            IssueQueryParameters queryParameters = new IssueQueryParameters()
+            {
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccortingToState()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueQueryParameters queryParameters = new IssueQueryParameters()
+            {
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+                StateName = "In Progress",
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(issues, "No issues received");
             Assert.IsTrue(issues.Count > 0, "Issue list is empty");
@@ -383,7 +409,11 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             try
             {
-                IList<Issue> issues = redmineClient.GetIssues(int.MaxValue, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+                IssueQueryParameters queryParameters = new IssueQueryParameters()
+                {
+                    ProjectIdentifier = "NotAProject",
+                };
+                IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
                 Assert.IsTrue(false, "Should throw an exception and never reach this line");
             }
             catch (Exception ex)
