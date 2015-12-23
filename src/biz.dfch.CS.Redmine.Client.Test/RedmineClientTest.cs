@@ -849,6 +849,26 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(journalData.Notes, createdJournal.Notes, "Journal text not set correctly");
         }
 
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateJournalUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            string notes = "The quick brown fox jumps over the lazy dog.";
+
+            object journalData = new Dictionary<string, object>
+            {
+                {JournalData.NotesKey, notes},
+                {JournalData.PrivateNotesKey, true},
+            };
+            
+            Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdJournal, "No journal received");
+            Assert.AreEqual(notes, createdJournal.Notes, "Journal text not set correctly");
+        }
+
         #endregion Journals
 
         #region Users

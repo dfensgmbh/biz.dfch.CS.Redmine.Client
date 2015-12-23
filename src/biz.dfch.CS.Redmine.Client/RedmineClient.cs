@@ -1023,9 +1023,93 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the journal entry</param>
         /// <param name="journalData">The data of the journal entry</param>
         /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, object journalData)
+        {
+            #region Contract
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "roleNames must be Dictionary<string, object> or JournalData");
+            #endregion Contract
+
+            Journal journal = null;
+            if (journalData is Dictionary<string, object>)
+            {
+                journal = this.CreateJournal(issueId, (Dictionary<string, object>)journalData);
+            }
+            else if (journalData is JournalData)
+            {
+                journal = this.CreateJournal(issueId, (JournalData)journalData);
+            }
+            return journal;
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, Dictionary<string, object> journalData)
+        {
+            #region Contract
+            Contract.Requires(null != journalData, "No journal data defined");
+            #endregion Contract
+
+            JournalData journalDataObject = new JournalData(journalData);
+            return this.CreateJournal(issueId, journalDataObject);
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <returns>The new created journal entry</returns>
         public Journal CreateJournal(int issueId, JournalData journalData)
         {
             return this.CreateJournal(issueId, journalData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, object journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "roleNames must be Dictionary<string, object> or JournalData");
+            #endregion Contract
+
+            Journal journal = null;
+            if (journalData is Dictionary<string, object>)
+            {
+                journal = this.CreateJournal(issueId, (Dictionary<string, object>)journalData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (journalData is JournalData)
+            {
+                journal = this.CreateJournal(issueId, (JournalData)journalData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return journal;
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, Dictionary<string, object> journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != journalData, "No journal data defined");
+            #endregion Contract
+
+            JournalData journalDataObject = new JournalData(journalData);
+            return this.CreateJournal(issueId, journalDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>

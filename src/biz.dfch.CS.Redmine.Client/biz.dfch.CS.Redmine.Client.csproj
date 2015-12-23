@@ -149,6 +149,7 @@
     <Compile Include="Model\IssueQueryParameters.cs" />
     <Compile Include="Model\JournalData.cs" />
     <Compile Include="Model\ProjectUser.cs" />
+    <Compile Include="Model\Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedmineClient.cs" />
     <Compile Include="RedmineKeys.cs" />
