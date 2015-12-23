@@ -201,7 +201,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Project> projects = RedmineClient.InvokeWithRetries(() =>
                 {
                     RedmineManager redmineManager = this.GetRedmineManager();
-                   return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
+                    return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return projects;
@@ -419,13 +419,111 @@ namespace biz.dfch.CS.Redmine.Client
         #region Issues
 
         /// <summary>
-        /// Gets the list of issues in a given state (or all state if no state is defiened) for the specified project or for all projects if project id is not specified
+        /// Gets the list of issues
+        /// </summary>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues()
+        {
+            return this.GetIssues((IssueQueryParameters)null);
+        }
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(object queryParameters)
+        {
+            #region Contract
+            Contract.Requires((queryParameters is Dictionary<string, object>) || (queryParameters is IssueQueryParameters), "queryParameters must be Dictionary<string, object> or IssueQueryParameters");
+            #endregion Contract
+
+            IList<Issue> issues = null;
+            if (queryParameters is Dictionary<string, object>)
+            {
+                issues = this.GetIssues((Dictionary<string, object>)queryParameters);
+            }
+            else if (queryParameters is IssueMetaData)
+            {
+                issues = this.GetIssues((IssueQueryParameters)queryParameters);
+            }
+            return issues;
+        }
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(Dictionary<string, object> queryParameters)
+        {
+            #region Contract
+            Contract.Requires(null != queryParameters, "No query parameters defined");
+            #endregion Contract
+
+            IssueQueryParameters queryParameterObject = new IssueQueryParameters(queryParameters);
+            return this.GetIssues(queryParameterObject);
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
         /// </summary>
         /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
         /// <returns>The list of issues for a project</returns>
         public IList<Issue> GetIssues(IssueQueryParameters queryParameters)
         {
             return this.GetIssues(queryParameters, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            return this.GetIssues((IssueQueryParameters)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Gets the list of issues
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(object queryParameters, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((queryParameters is Dictionary<string, object>) || (queryParameters is IssueQueryParameters), "queryParameters must be Dictionary<string, object> or IssueQueryParameters");
+            #endregion Contract
+
+            IList<Issue> issues = null;
+            if (queryParameters is Dictionary<string, object>)
+            {
+                issues = this.GetIssues((Dictionary<string, object>)queryParameters, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (queryParameters is IssueMetaData)
+            {
+                issues = this.GetIssues((IssueQueryParameters)queryParameters, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return issues;
+        }
+
+        /// <summary>
+        /// Gets the list of issues matching the query parameters (null values are ignored)
+        /// </summary>
+        /// <param name="queryParameters">The parameters for the query (null values are ignored)</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The list of issues for a project</returns>
+        public IList<Issue> GetIssues(Dictionary<string, object> queryParameters, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != queryParameters, "No query parameters defined");
+            #endregion Contract
+
+            IssueQueryParameters queryParameterObject = new IssueQueryParameters(queryParameters);
+            return this.GetIssues(queryParameterObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -475,10 +573,10 @@ namespace biz.dfch.CS.Redmine.Client
                             Tracker tracker = this.GetTrackerByName(queryParameters.TrackerName);
                             parameters.Add(RedmineKeys.TRACKER_ID, tracker.Id.ToString());
                         }
-                        if (!string.IsNullOrEmpty(queryParameters.AssigneeLogin))
+                        if (!string.IsNullOrEmpty(queryParameters.AssignedToLogin))
                         {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssigneeLogin));
-                            User assignee = this.GetUserByLogin(queryParameters.AssigneeLogin);
+                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssignedToLogin));
+                            User assignee = this.GetUserByLogin(queryParameters.AssignedToLogin);
                             parameters.Add(RedmineKeys.ASSIGNED_TO_ID, assignee.Id.ToString());
                         }
                     }
@@ -532,7 +630,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue)
         {
-            return this.CreateIssue(issue, null);
+            return this.CreateIssue(issue, (IssueMetaData)null);
         }
 
         /// <summary>
@@ -544,7 +642,47 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The new created issue</returns>
         public Issue CreateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
-            return this.CreateIssue(issue, null, totalAttempts, baseRetryIntervallMilliseconds);
+            return this.CreateIssue(issue, (IssueMetaData)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, object issueData)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue createdIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                createdIssue = this.CreateIssue(issue, (Dictionary<string, object>)issueData);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                createdIssue = this.CreateIssue(issue, (AttachmentData)issueData);
+            }
+            return createdIssue;
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, Dictionary<string, object> issueData)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.CreateIssue(issue, issueDataObject);
         }
 
         /// <summary>
@@ -556,6 +694,50 @@ namespace biz.dfch.CS.Redmine.Client
         public Issue CreateIssue(Issue issue, IssueMetaData issueData)
         {
             return this.CreateIssue(issue, issueData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, object issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue createdIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                createdIssue = this.CreateIssue(issue, (Dictionary<string, object>)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                createdIssue = this.CreateIssue(issue, (AttachmentData)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return createdIssue;
+        }
+
+        /// <summary>
+        /// Creates a new issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to create</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created issue</returns>
+        public Issue CreateIssue(Issue issue, Dictionary<string, object> issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.CreateIssue(issue, issueDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -602,7 +784,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue)
         {
-            return this.UpdateIssue(issue, null);
+            return this.UpdateIssue(issue, (IssueMetaData)null);
         }
 
         /// <summary>
@@ -614,7 +796,47 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The updated issue</returns>
         public Issue UpdateIssue(Issue issue, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
-            return this.UpdateIssue(issue, null, totalAttempts, baseRetryIntervallMilliseconds);
+            return this.UpdateIssue(issue, (IssueMetaData)null, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, object issueData)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue updatedIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                updatedIssue = this.UpdateIssue(issue, (Dictionary<string, object>)issueData);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                updatedIssue = this.UpdateIssue(issue, (IssueMetaData)issueData);
+            }
+            return updatedIssue;
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, Dictionary<string, object> issueData)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.UpdateIssue(issue, issueDataObject);
         }
 
         /// <summary>
@@ -626,6 +848,50 @@ namespace biz.dfch.CS.Redmine.Client
         public Issue UpdateIssue(Issue issue, IssueMetaData issueData)
         {
             return this.UpdateIssue(issue, issueData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, object issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((issueData is Dictionary<string, object>) || (issueData is IssueMetaData), "issueData must be Dictionary<string, object> or IssueMetaData");
+            #endregion Contract
+
+            Issue updatedIssue = null;
+            if (issueData is Dictionary<string, object>)
+            {
+                updatedIssue = this.UpdateIssue(issue, (Dictionary<string, object>)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (issueData is IssueMetaData)
+            {
+                updatedIssue = this.UpdateIssue(issue, (IssueMetaData)issueData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return updatedIssue;
+        }
+
+        /// <summary>
+        /// Updates an issue
+        /// </summary>
+        /// <param name="issue">The data for the issue to update</param>
+        /// <param name="issueData">The meta data object for the issue</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The updated issue</returns>
+        public Issue UpdateIssue(Issue issue, Dictionary<string, object> issueData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != issueData, "No issue data defined");
+            #endregion Contract
+
+            IssueMetaData issueDataObject = new IssueMetaData(issueData);
+            return this.UpdateIssue(issue, issueDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -871,9 +1137,93 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the attachment</param>
         /// <param name="attachmentData">The data for the attachment</param>
         /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, object attachmentData)
+        {
+            #region Contract
+            Contract.Requires((attachmentData is Dictionary<string, object>) || (attachmentData is AttachmentData), "attachmentData must be Dictionary<string, object> or AttachmentData");
+            #endregion Contract
+
+            Attachment attachment = null;
+            if (attachmentData is Dictionary<string, object>)
+            {
+                attachment = this.CreateAttachment(issueId, (Dictionary<string, object>)attachmentData);
+            }
+            else if (attachmentData is AttachmentData)
+            {
+                attachment = this.CreateAttachment(issueId, (AttachmentData)attachmentData);
+            }
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, Dictionary<string, object> attachmentData)
+        {
+            #region Contract
+            Contract.Requires(null != attachmentData, "No attachment data defined");
+            #endregion Contract
+
+            AttachmentData attachmentDataObject = new AttachmentData(attachmentData);
+            return this.CreateAttachment(issueId, attachmentDataObject);
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
         public Attachment CreateAttachment(int issueId, AttachmentData attachmentData)
         {
             return this.CreateAttachment(issueId, attachmentData);
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, object attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((attachmentData is Dictionary<string, object>) || (attachmentData is AttachmentData), "attachmentData must be Dictionary<string, object> or AttachmentData");
+            #endregion Contract
+
+            Attachment attachment = null;
+            if (attachmentData is Dictionary<string, object>)
+            {
+                attachment = this.CreateAttachment(issueId, (Dictionary<string, object>)attachmentData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (attachmentData is AttachmentData)
+            {
+                attachment = this.CreateAttachment(issueId, (AttachmentData)attachmentData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, Dictionary<string, object> attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != attachmentData, "No attachment data defined");
+            #endregion Contract
+
+            AttachmentData attachmentDataObject = new AttachmentData(attachmentData);
+            return this.CreateAttachment(issueId, attachmentDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1023,9 +1373,93 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the journal entry</param>
         /// <param name="journalData">The data of the journal entry</param>
         /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, object journalData)
+        {
+            #region Contract
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "journalData must be Dictionary<string, object> or JournalData");
+            #endregion Contract
+
+            Journal journal = null;
+            if (journalData is Dictionary<string, object>)
+            {
+                journal = this.CreateJournal(issueId, (Dictionary<string, object>)journalData);
+            }
+            else if (journalData is JournalData)
+            {
+                journal = this.CreateJournal(issueId, (JournalData)journalData);
+            }
+            return journal;
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, Dictionary<string, object> journalData)
+        {
+            #region Contract
+            Contract.Requires(null != journalData, "No journal data defined");
+            #endregion Contract
+
+            JournalData journalDataObject = new JournalData(journalData);
+            return this.CreateJournal(issueId, journalDataObject);
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <returns>The new created journal entry</returns>
         public Journal CreateJournal(int issueId, JournalData journalData)
         {
             return this.CreateJournal(issueId, journalData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, object journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "journalData must be Dictionary<string, object> or JournalData");
+            #endregion Contract
+
+            Journal journal = null;
+            if (journalData is Dictionary<string, object>)
+            {
+                journal = this.CreateJournal(issueId, (Dictionary<string, object>)journalData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (journalData is JournalData)
+            {
+                journal = this.CreateJournal(issueId, (JournalData)journalData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return journal;
+        }
+
+        /// <summary>
+        /// Creates a new journal entry and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the journal entry</param>
+        /// <param name="journalData">The data of the journal entry</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created journal entry</returns>
+        public Journal CreateJournal(int issueId, Dictionary<string, object> journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != journalData, "No journal data defined");
+            #endregion Contract
+
+            JournalData journalDataObject = new JournalData(journalData);
+            return this.CreateJournal(issueId, journalDataObject, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1378,9 +1812,43 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userLogin">The login of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectIdentifier, userLogin, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, IList<string> roleNames)
         {
             return this.AddUserToProject(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectIdentifier, userLogin, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1417,10 +1885,45 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userId">The id of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectId, userId, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser AddUserToProject(int projectId, int userId, IList<string> roleNames)
         {
             return this.AddUserToProject(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectId, userId, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Add a user to a project
@@ -1557,10 +2060,46 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userLogin">The login of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectIdentifier, userLogin, (IList<string>)roleNames);
+
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, IList<string> roleNames)
         {
             return this.UpdateUserRoles(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectIdentifier, userLogin, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Updates the roles a user has in a project
@@ -1596,10 +2135,45 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userId">The id of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectId, userId, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> roleNames)
         {
             return this.UpdateUserRoles(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectId, userId, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Updates the roles a user has in a project

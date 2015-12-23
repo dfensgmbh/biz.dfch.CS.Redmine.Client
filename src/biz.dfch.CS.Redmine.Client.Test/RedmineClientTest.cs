@@ -351,7 +351,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
-            IList<Issue> issues = redmineClient.GetIssues(null, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            IList<Issue> issues = redmineClient.GetIssues(TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(issues, "No issues received");
             Assert.IsTrue(issues.Count > 0, "Issue list is empty");
@@ -398,6 +398,30 @@ namespace biz.dfch.CS.Redmine.Client.Test
             {
                 Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
                 Assert.AreEqual(queryParameters.StateName, issue.Status.Name, "Issue with wrong state loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccordingToStateUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            string stateName = "In Progress";
+            object queryParameters = new Dictionary<string, object>()
+            {
+                {IssueQueryParameters.StateNameKey, stateName},
+                {IssueQueryParameters.ProjectIdentifierKey,TestEnvironment.ProjectIdentifier1},
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(stateName, issue.Status.Name, "Issue with wrong state loaded");
             }
         }
 
@@ -457,7 +481,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueQueryParameters queryParameters = new IssueQueryParameters()
             {
                 ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
-                AssigneeLogin = "test",
+                AssignedToLogin = "test",
             };
             IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -572,6 +596,61 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
+        public void CreateIssueUsingObject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue issue = new Issue()
+            {
+                Subject = "Created via API",
+                Description = "This issue was created via API",
+                DueDate = DateTime.Today.AddDays(3),
+                IsPrivate = true,
+            };
+            string assignedToLogin = TestEnvironment.UserLogin2;
+            string priorityName = "High";
+            string trackerName = "Feature";
+            string stateName = "New";
+            string projectIdentifier = TestEnvironment.ProjectIdentifier1;
+            string notes = "This is a new issue with a note";
+            object metaData = new Dictionary<string, object>()
+            {
+                {IssueMetaData.AssignedToLoginKey, assignedToLogin},
+                {IssueMetaData.PriorityNameKey, priorityName},
+                {IssueMetaData.TrackerNameKey, trackerName},
+                {IssueMetaData.StateNameKey, stateName},
+                {IssueMetaData.ProjectIdentifierKey, projectIdentifier},
+                {IssueMetaData.NotesKey, notes},
+                {IssueMetaData.PrivateNotesKey, true},
+            };
+
+            Issue createdIssue = redmineClient.CreateIssue(issue, metaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdIssue, "No issue received");
+            Assert.IsTrue(createdIssue.Id > 0, "No Id defined in returned issue");
+            Assert.AreEqual(issue.Subject, createdIssue.Subject, "Subject was not set correctly");
+            Assert.AreEqual(issue.Description, createdIssue.Description, "Description was not set correctly");
+            Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
+            Assert.AreEqual(issue.IsPrivate, createdIssue.IsPrivate, "IsPrivate was not set correctly");
+
+            Assert.AreEqual(redmineClient.GetUserByLogin(assignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly");
+            Assert.AreEqual(priorityName, createdIssue.Priority.Name, "Priority was not set correctly");
+            Assert.AreEqual(trackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
+            Assert.AreEqual(stateName, createdIssue.Status.Name, "Status was not set correctly");
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(projectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(notes, lastJournal.Notes, "Journal notes not set correctly");
+
+            redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
         public void UpdateIssue()
         {
             RedmineClient redmineClient = new RedmineClient();
@@ -628,6 +707,75 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             Assert.IsNotNull(lastJournal, "No journal entry created");
             Assert.AreEqual(updateMetaData.Notes, lastJournal.Notes, "Journal notes not set correctly");
+
+            redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateIssueUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue issue = new Issue()
+            {
+                Subject = "Created via API",
+                Description = "This issue was created via API",
+                DueDate = DateTime.Today.AddDays(3),
+            };
+            IssueMetaData metaData = new IssueMetaData()
+            {
+                AssignedToLogin = TestEnvironment.UserLogin2,
+                PriorityName = "High",
+                TrackerName = "Feature",
+                StateName = "New",
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+            };
+            Issue createdIssue = redmineClient.CreateIssue(issue, metaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            createdIssue.Description = "This issue was updated via API";
+            createdIssue.Subject = "Update Issue";
+            createdIssue.DueDate = DateTime.Today.AddDays(5);
+            createdIssue.IsPrivate = true;
+
+            string assignedToLogin = TestEnvironment.UserLogin1;
+            string priorityName = "Urgent";
+            string trackerName = "Bug";
+            string stateName = "In Progress";
+            string projectIdentifier = TestEnvironment.ProjectIdentifier2;
+            string notes = "This issue had to be changed";
+            object updateMetaData = new Dictionary<string, object>()
+            {
+                {IssueMetaData.AssignedToLoginKey, assignedToLogin},
+                {IssueMetaData.PriorityNameKey, priorityName},
+                {IssueMetaData.TrackerNameKey, trackerName},
+                {IssueMetaData.StateNameKey, stateName},
+                {IssueMetaData.ProjectIdentifierKey, projectIdentifier},
+                {IssueMetaData.NotesKey, notes},
+                {IssueMetaData.PrivateNotesKey, true},
+            };
+
+            Issue updatedIssue = redmineClient.UpdateIssue(createdIssue, updateMetaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedIssue, "No issue received");
+            Assert.IsTrue(updatedIssue.Id > 0, "No Id defined in returned issue");
+            Assert.AreEqual(createdIssue.Subject, updatedIssue.Subject, "Subject was not set correctly");
+            Assert.AreEqual(createdIssue.Description, updatedIssue.Description, "Description was not set correctly");
+            Assert.AreEqual(createdIssue.DueDate, updatedIssue.DueDate, "DueDate was not set correctly");
+            Assert.AreEqual(createdIssue.IsPrivate, updatedIssue.IsPrivate, "IsPrivate was not set correctly");
+
+            Assert.AreEqual(redmineClient.GetUserByLogin(assignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly");
+            Assert.AreEqual(priorityName, updatedIssue.Priority.Name, "Priority was not set correctly");
+            Assert.AreEqual(trackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
+            Assert.AreEqual(stateName, updatedIssue.Status.Name, "Status was not set correctly");
+            Assert.AreEqual(redmineClient.GetProjectByIdentifier(projectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(notes, lastJournal.Notes, "Journal notes not set correctly");
 
             redmineClient.DeleteIssue(createdIssue.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
         }
@@ -766,6 +914,41 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(attachmentData.Notes, lastJournal.Notes, "Journal notes not set correctly");
         }
 
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateAttachmentUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            string contentType = "text/plain";
+            string fileName = "APIUpload.txt";
+            string description = "Uploadet via API";
+            string notes = "Note for the attachment";
+            object attachmentData = new Dictionary<string, object>()
+            {
+                {AttachmentData.ContentKey, File.ReadAllBytes(TestEnvironment.AttachmentFilePath)},
+                {AttachmentData.ContentTypeKey, contentType},
+                {AttachmentData.FileNameKey, fileName},
+                {AttachmentData.DescriptionKey, description},
+                {AttachmentData.NotesKey, notes},
+                {AttachmentData.PrivateNotesKey, true},
+            };
+
+            Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdAttachment, "No attachment received");
+            Assert.AreEqual(description, createdAttachment.Description, "Description was not set correctly");
+            Assert.AreEqual(fileName, createdAttachment.FileName, "File name was not set correctly");
+            Assert.AreEqual(contentType, createdAttachment.ContentType, "Content type was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(notes, lastJournal.Notes, "Journal notes not set correctly");
+        }
+
         #endregion Attachments
 
         #region Journals
@@ -847,6 +1030,26 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             Assert.IsNotNull(createdJournal, "No journal received");
             Assert.AreEqual(journalData.Notes, createdJournal.Notes, "Journal text not set correctly");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateJournalUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            string notes = "The quick brown fox jumps over the lazy dog.";
+
+            object journalData = new Dictionary<string, object>
+            {
+                {JournalData.NotesKey, notes},
+                {JournalData.PrivateNotesKey, true},
+            };
+
+            Journal createdJournal = redmineClient.CreateJournal(TestEnvironment.IssueId, journalData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdJournal, "No journal received");
+            Assert.AreEqual(notes, createdJournal.Notes, "Journal text not set correctly");
         }
 
         #endregion Journals
@@ -1096,6 +1299,31 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
+        public void AddUserToProjectUsingObject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsers.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User already in project befor update");
+
+            object userRoles = new List<string> { "Reporter" };
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(addedProjectUser.Roles, "No roles received for user");
+            Assert.IsTrue(addedProjectUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(addedProjectUser.Roles.Contains("Reporter"), "User has no the defined role in the project");
+
+            IList<ProjectUser> projectUsersAfterUpdate = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterUpdate.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User was not added to project");
+
+            redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
         public void AddUserToProjectUsingKeys()
         {
             RedmineClient redmineClient = new RedmineClient();
@@ -1161,6 +1389,38 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             userRoles.Add("Reporter");
             ProjectUser updatedUser = redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUser, "No project user received");
+            Assert.IsNotNull(updatedUser.Roles, "No roles received for user");
+            Assert.IsTrue(updatedUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUser.Roles.Contains("Reporter"), "Role was not added in returned object");
+
+            IList<string> updatedUserRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(updatedUserRoles, "No roles received for user");
+            Assert.IsTrue(updatedUserRoles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(updatedUserRoles.Contains("Reporter"), "Role was not added correctly");
+
+            userRoles.Remove("Reporter");
+            redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateRolesOfUserInProjectUseObject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<string> userRoles = redmineClient.GetUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(userRoles, "No roles received for user");
+            Assert.IsTrue(userRoles.Count > 0, "Role list empty for user");
+            Assert.IsFalse(userRoles.Contains("Reporter"), "User has role befoer update");
+
+            userRoles.Add("Reporter");
+            object userRolseObj = userRoles;
+            ProjectUser updatedUser = redmineClient.UpdateUserRoles(TestEnvironment.ProjectId, TestEnvironment.UserId1, userRolseObj, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(updatedUser, "No project user received");
             Assert.IsNotNull(updatedUser.Roles, "No roles received for user");

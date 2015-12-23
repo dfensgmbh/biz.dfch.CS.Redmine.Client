@@ -24,11 +24,32 @@ namespace biz.dfch.CS.Redmine.Client.Model
 {
     public class AttachmentData
     {
+        public const string FileNameKey = "FileName";
+        public const string DescriptionKey = "Description";
+        public const string ContentTypeKey = "ContentType";
+        public const string ContentKey = "Content";
+        public const string NotesKey = "Notes";
+        public const string PrivateNotesKey = "PrivateNotes";
+
         public string FileName { get; set; }
         public string Description { get; set; }
         public string ContentType { get; set; }
         public byte[] Content { get; set; }
         public string Notes { get; set; }
         public bool PrivateNotes { get; set; }
+
+        public AttachmentData()
+        {
+        }
+
+        public AttachmentData(Dictionary<string, object> values)
+        {
+            this.FileName = Util.GetValue<string>(values, AttachmentData.FileNameKey);
+            this.Description = Util.GetValue<string>(values, AttachmentData.DescriptionKey);
+            this.ContentType = Util.GetValue<string>(values, AttachmentData.ContentTypeKey);
+            this.Content = Util.GetValue<byte[]>(values, AttachmentData.ContentKey);
+            this.Notes = Util.GetValue<string>(values, AttachmentData.NotesKey);
+            this.PrivateNotes = Util.GetValue<bool>(values, AttachmentData.PrivateNotesKey);
+        }
     }
 }

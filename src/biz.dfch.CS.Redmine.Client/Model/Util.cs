@@ -22,25 +22,16 @@ using System.Threading.Tasks;
 
 namespace biz.dfch.CS.Redmine.Client.Model
 {
-
-    public class JournalData
+    internal static class Util
     {
-        public const string NotesKey = "Notes";
-        public const string PrivateNotesKey = "PrivateNotes";
-
-        public string Notes { get; set; }
-        public bool PrivateNotes { get; set; }
-
-        public JournalData()
+        internal static PropertyType GetValue<PropertyType>(Dictionary<string, object> values, string key)
         {
-        }
-
-        public JournalData(Dictionary<string, object> values)
-        {
-            this.Notes = Util.GetValue<string>(values, JournalData.NotesKey);
-            this.PrivateNotes = Util.GetValue<bool>(values, JournalData.PrivateNotesKey);
+            PropertyType value = default(PropertyType);
+            if ((!string.IsNullOrEmpty(key)) && (null != values) && (values.ContainsKey(key)) && (values[key] is PropertyType))
+            {
+                value = (PropertyType)values[key];
+            }
+            return value;
         }
     }
-
-
 }
