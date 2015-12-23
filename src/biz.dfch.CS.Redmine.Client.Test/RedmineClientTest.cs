@@ -766,6 +766,41 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(attachmentData.Notes, lastJournal.Notes, "Journal notes not set correctly");
         }
 
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateAttachmentUsingObjects()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            string contentType = "text/plain";
+            string fileName = "APIUpload.txt";
+            string description = "Uploadet via API";
+            string notes = "Note for the attachment";
+            object attachmentData = new Dictionary<string, object>()
+            {
+                {AttachmentData.ContentKey, File.ReadAllBytes(TestEnvironment.AttachmentFilePath)},
+                {AttachmentData.ContentTypeKey, contentType},
+                {AttachmentData.FileNameKey, fileName},
+                {AttachmentData.DescriptionKey, description},
+                {AttachmentData.NotesKey, notes},
+                {AttachmentData.PrivateNotesKey, true},
+            };
+
+            Attachment createdAttachment = redmineClient.CreateAttachment(TestEnvironment.IssueId, attachmentData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(createdAttachment, "No attachment received");
+            Assert.AreEqual(description, createdAttachment.Description, "Description was not set correctly");
+            Assert.AreEqual(fileName, createdAttachment.FileName, "File name was not set correctly");
+            Assert.AreEqual(contentType, createdAttachment.ContentType, "Content type was not set correctly");
+
+            IList<Journal> journals = redmineClient.GetJournals(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Journal lastJournal = journals.OrderBy(j => j.CreatedOn).LastOrDefault();
+
+            Assert.IsNotNull(lastJournal, "No journal entry created");
+            Assert.AreEqual(notes, lastJournal.Notes, "Journal notes not set correctly");
+        }
+
         #endregion Attachments
 
         #region Journals

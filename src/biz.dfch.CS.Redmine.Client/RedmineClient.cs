@@ -871,11 +871,95 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="issueId">Issue to append the attachment</param>
         /// <param name="attachmentData">The data for the attachment</param>
         /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, object attachmentData)
+        {
+            #region Contract
+            Contract.Requires((attachmentData is Dictionary<string, object>) || (attachmentData is AttachmentData), "attachmentData must be Dictionary<string, object> or AttachmentData");
+            #endregion Contract
+
+            Attachment attachment = null;
+            if (attachmentData is Dictionary<string, object>)
+            {
+                attachment = this.CreateAttachment(issueId, (Dictionary<string, object>)attachmentData);
+            }
+            else if (attachmentData is AttachmentData)
+            {
+                attachment = this.CreateAttachment(issueId, (AttachmentData)attachmentData);
+            }
+            return attachment;
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, Dictionary<string, object> attachmentData)
+        {
+            #region Contract
+            Contract.Requires(null != attachmentData, "No attachment data defined");
+            #endregion Contract
+
+            AttachmentData attachmentDataObject = new AttachmentData(attachmentData);
+            return this.CreateAttachment(issueId, attachmentDataObject);
+        }
+
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <returns>The new created attachment</returns>
         public Attachment CreateAttachment(int issueId, AttachmentData attachmentData)
         {
             return this.CreateAttachment(issueId, attachmentData);
         }
 
+        /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, object attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires((attachmentData is Dictionary<string, object>) || (attachmentData is AttachmentData), "attachmentData must be Dictionary<string, object> or AttachmentData");
+            #endregion Contract
+
+            Attachment attachment = null;
+            if (attachmentData is Dictionary<string, object>)
+            {
+                attachment = this.CreateAttachment(issueId, (Dictionary<string, object>)attachmentData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            else if (attachmentData is AttachmentData)
+            {
+                attachment = this.CreateAttachment(issueId, (AttachmentData)attachmentData, totalAttempts, baseRetryIntervallMilliseconds);
+            }
+            return attachment;
+        }
+
+         /// <summary>
+        /// Creates a new attachment and appends it to an existing issue
+        /// </summary>
+        /// <param name="issueId">Issue to append the attachment</param>
+        /// <param name="attachmentData">The data for the attachment</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The new created attachment</returns>
+        public Attachment CreateAttachment(int issueId, Dictionary<string, object> attachmentData, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(null != attachmentData, "No attachment data defined");
+            #endregion Contract
+
+            AttachmentData attachmentDataObject = new AttachmentData(attachmentData);
+            return this.CreateAttachment(issueId, attachmentDataObject, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+        
         /// <summary>
         /// Creates a new attachment and appends it to an existing issue
         /// </summary>
@@ -1026,7 +1110,7 @@ namespace biz.dfch.CS.Redmine.Client
         public Journal CreateJournal(int issueId, object journalData)
         {
             #region Contract
-            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "roleNames must be Dictionary<string, object> or JournalData");
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "journalData must be Dictionary<string, object> or JournalData");
             #endregion Contract
 
             Journal journal = null;
@@ -1079,7 +1163,7 @@ namespace biz.dfch.CS.Redmine.Client
         public Journal CreateJournal(int issueId, object journalData, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
-            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "roleNames must be Dictionary<string, object> or JournalData");
+            Contract.Requires((journalData is Dictionary<string, object>) || (journalData is JournalData), "journalData must be Dictionary<string, object> or JournalData");
             #endregion Contract
 
             Journal journal = null;
