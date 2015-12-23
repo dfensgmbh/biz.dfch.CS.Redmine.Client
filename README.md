@@ -5,3 +5,13 @@
 [![Version](https://img.shields.io/nuget/v/biz.dfch.CS.Redmine.Client.svg)](https://www.nuget.org/packages/biz.dfch.CS.Redmine.Client/)
 
 Client for Redmine project management web application
+
+Assembly: biz.dfch.CS.Redmine.Client
+
+d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
+
+## Download
+
+* Get it on [NuGet](https://www.nuget.org/packages/biz.dfch.CS.Redmine.Client/)
+
+* See [Releases](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/releases) and [Tags](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/tags) on [GitHub](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client)
