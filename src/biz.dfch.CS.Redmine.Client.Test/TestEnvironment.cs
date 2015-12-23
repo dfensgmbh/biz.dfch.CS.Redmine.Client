@@ -40,7 +40,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
         public static string AttachmentFilePath { get; set; }
         public static int UserId1 { get; set; }
         public static int UserId2 { get; set; }
-        public static int MembershipId { get; set; }
+        public static int NumberOfProjectsToCreate { get; set; }
+        public static int NumberOfIssuesToCreate { get; set; }
 
         static TestEnvironment()
         {
@@ -58,7 +59,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             TestEnvironment.JournalId = 9;
             TestEnvironment.UserId1 = 1;
             TestEnvironment.UserId2 = 5;
-            TestEnvironment.MembershipId = 2;
 
             //lab3
             //TestEnvironment.RedminUrl = "https://172.19.115.27";
@@ -72,13 +72,14 @@ namespace biz.dfch.CS.Redmine.Client.Test
             //TestEnvironment.ProjectIdentifier2 = "project-for-testing-2";
             //TestEnvironment.AttachmentId = 1;
             //TestEnvironment.JournalId = 3;
-            //TestEnvironment.UserId1 = 1;
-            //TestEnvironment.UserId2 = 5;
-            //TestEnvironment.MembershipId = 1;
+            //TestEnvironment.UserId1 = 5;
+            //TestEnvironment.UserId2 = 6;
 
             TestEnvironment.TotalAttempts = 3;
             TestEnvironment.BaseRetryIntervallMilliseconds = 100;
             TestEnvironment.AttachmentFilePath = @"C:\Users\Administrator\Desktop\test.txt";
+            TestEnvironment.NumberOfProjectsToCreate = 1000;
+            TestEnvironment.NumberOfIssuesToCreate = 1;
         }
 
 
