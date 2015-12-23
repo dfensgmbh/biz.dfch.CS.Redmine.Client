@@ -1557,10 +1557,46 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userLogin">The login of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectIdentifier, userLogin, (IList<string>)roleNames);
+  
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, IList<string> roleNames)
         {
             return this.UpdateUserRoles(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(string projectIdentifier, string userLogin, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectIdentifier, userLogin, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Updates the roles a user has in a project
@@ -1596,10 +1632,45 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userId">The id of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectId, userId, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser UpdateUserRoles(int projectId, int userId, IList<string> roleNames)
         {
             return this.UpdateUserRoles(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Updates the roles a user has in a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser UpdateUserRoles(int projectId, int userId, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.UpdateUserRoles(projectId, userId, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Updates the roles a user has in a project
