@@ -41,6 +41,10 @@ namespace biz.dfch.CS.Redmine.Client
         /// Default base retry intervall milliseconds
         /// </summary>
         private const int BASE_RETRY_INTERVAL_MILLISECONDS = 5 * 1000;
+        /// <summary>
+        /// The page size for redmine (can at most be 100 in current redmine version (3.2.0), should be configurable later)
+        /// </summary>
+        private const int PAGE_SIZE = 100;
 
         #endregion Constants
 
@@ -70,6 +74,10 @@ namespace biz.dfch.CS.Redmine.Client
         /// True if the the user could succsefully be authorized on the server
         /// </summary>
         public bool IsLoggedIn { get; private set; }
+        /// <summary>
+        /// The page size to get in a list request (request will be repeated until all items are loaded)
+        /// </summary>
+        public int PageSize { get; set; }
 
         #endregion Properties
 
@@ -97,7 +105,20 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>True if the user could be authorized on the server</returns>
         public bool Login(string redmineUrl, string username, string password)
         {
-            return this.Login(redmineUrl, username, password, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+            return this.Login(redmineUrl, username, password, RedmineClient.PAGE_SIZE, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        ///  Checks if the user can be authorized on the server
+        /// </summary>
+        /// <param name="redmineUrl">Url of the redmine api</param>
+        /// <param name="username">The user name for authentication</param>
+        /// <param name="password">The password for authentication</param>
+        /// <param name="pageSize">The page size to get in a list request (request will be repeated until all items are loaded)</param>
+        /// <returns>True if the user could be authorized on the server</returns>
+        public bool Login(string redmineUrl, string username, string password, int pageSize)
+        {
+            return this.Login(redmineUrl, username, password, pageSize, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -110,6 +131,21 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>True if the user could be authorized on the server</returns>
         public bool Login(string redmineUrl, string username, string password, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            return this.Login(redmineUrl, username, password, RedmineClient.PAGE_SIZE, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        ///  Checks if the user can be authorized on the server
+        /// </summary>
+        /// <param name="redmineUrl">Url of the redmine api</param>
+        /// <param name="username">The user name for authentication</param>
+        /// <param name="password">The password for authentication</param>
+        /// <param name="pageSize">The page size to get in a list request (request will be repeated until all items are loaded)</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>True if the user could be authorized on the server</returns>
+        public bool Login(string redmineUrl, string username, string password, int pageSize, int totalAttempts, int baseRetryIntervallMilliseconds)
         {
             #region Contract
             Contract.Requires(!string.IsNullOrEmpty(redmineUrl), "No redmine url defined");
@@ -138,6 +174,7 @@ namespace biz.dfch.CS.Redmine.Client
                 this.RedmineUrl = redmineUrl;
                 this.Username = username;
                 this.Password = password;
+                this.PageSize = 100;
             }
             else
             {
@@ -191,7 +228,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Project> projects = RedmineClient.InvokeWithRetries(() =>
                 {
                     RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetObjectList<Project>(new NameValueCollection());
+                   return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return projects;
@@ -443,7 +480,7 @@ namespace biz.dfch.CS.Redmine.Client
                     {
                         parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
                     }
-                    return redmineManager.GetObjectList<Issue>(parameters);
+                    return redmineManager.GetTotalObjectList<Issue>(parameters);
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return issues;
@@ -669,7 +706,7 @@ namespace biz.dfch.CS.Redmine.Client
             if (null != issueData)
             {
                 // Set User
-                if ((!string.IsNullOrEmpty(issueData.AssignedToLogin)) || (!string.IsNullOrEmpty(issueData.AuthorLogin)))
+                if (!string.IsNullOrEmpty(issueData.AssignedToLogin))
                 {
                     IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
                     if (!string.IsNullOrEmpty(issueData.AssignedToLogin))
@@ -680,14 +717,6 @@ namespace biz.dfch.CS.Redmine.Client
                         {
                             Id = assignedToUser.Id,
                             Name = assignedToUser.Login,
-                        };
-
-                        User authorUser = users.FirstOrDefault(u => u.Login == issueData.AuthorLogin);
-                        Contract.Assert(null != authorUser, string.Format("User '{0}' could not be found", issueData.AuthorLogin));
-                        issue.Author = new IdentifiableName()
-                        {
-                            Id = authorUser.Id,
-                            Name = authorUser.Login,
                         };
                     }
                 }
@@ -1063,7 +1092,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<User> users = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObjectList<User>(new NameValueCollection());
+                return redmineManager.GetTotalObjectList<User>(new NameValueCollection());
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return users;
@@ -1326,7 +1355,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
@@ -1598,7 +1627,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             ProjectMembership toUpdate = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
@@ -1702,7 +1731,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             ProjectMembership toDelete = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
@@ -1773,7 +1802,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<IssueStatus> states = RedmineClient.InvokeWithRetries(() =>
                 {
                     RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetObjectList<IssueStatus>(new NameValueCollection());
+                    return redmineManager.GetTotalObjectList<IssueStatus>(new NameValueCollection());
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return states;
@@ -1846,7 +1875,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<IssuePriority> priorities = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObjectList<IssuePriority>(new NameValueCollection());
+                return redmineManager.GetTotalObjectList<IssuePriority>(new NameValueCollection());
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return priorities;
@@ -1919,7 +1948,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Tracker> trackers = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObjectList<Tracker>(new NameValueCollection());
+                return redmineManager.GetTotalObjectList<Tracker>(new NameValueCollection());
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return trackers;
@@ -1993,7 +2022,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Role> roles = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObjectList<Role>(new NameValueCollection());
+                return redmineManager.GetTotalObjectList<Role>(new NameValueCollection());
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return roles;
@@ -2062,7 +2091,9 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>A new redmine manager</returns>
         private RedmineManager GetRedmineManager(string redmineUrl, string username, string password)
         {
-            return new RedmineManager(redmineUrl, username, password, MimeFormat.json, false);
+            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.json, false);
+            redmineManager.PageSize = this.PageSize;
+            return redmineManager;
         }
 
         #endregion Redmine API Access

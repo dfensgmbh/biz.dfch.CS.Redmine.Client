@@ -439,7 +439,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData metaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin2,
-                AuthorLogin = TestEnvironment.UserLogin1,
                 PriorityName = "High",
                 TrackerName = "Feature",
                 StateName = "New",
@@ -456,7 +455,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
             Assert.AreEqual(issue.IsPrivate, createdIssue.IsPrivate, "IsPrivate was not set correctly");
 
-            Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly");
             Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly");
             Assert.AreEqual(metaData.PriorityName, createdIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");
@@ -488,7 +486,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData metaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin2,
-                AuthorLogin = TestEnvironment.UserLogin1,
                 PriorityName = "High",
                 TrackerName = "Feature",
                 StateName = "New",
@@ -503,7 +500,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData updateMetaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin1,
-                AuthorLogin = TestEnvironment.UserLogin1, // Author can not be changed
                 PriorityName = "Urgent",
                 TrackerName = "Bug",
                 StateName = "In Progress",
@@ -521,7 +517,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             Assert.AreEqual(createdIssue.DueDate, updatedIssue.DueDate, "DueDate was not set correctly");
             Assert.AreEqual(createdIssue.IsPrivate, updatedIssue.IsPrivate, "IsPrivate was not set correctly");
 
-            Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.Author.Id, "Author was not set correctly");
             Assert.AreEqual(redmineClient.GetUserByLogin(updateMetaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, updatedIssue.AssignedTo.Id, "AssignedTo was not set correctly");
             Assert.AreEqual(updateMetaData.PriorityName, updatedIssue.Priority.Name, "Priority was not set correctly");
             Assert.AreEqual(updateMetaData.TrackerName, updatedIssue.Tracker.Name, "Tracker was not set correctly");
@@ -553,7 +548,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueMetaData metaData = new IssueMetaData()
             {
                 AssignedToLogin = TestEnvironment.UserLogin2,
-                AuthorLogin = TestEnvironment.UserLogin1,
                 PriorityName = "High",
                 TrackerName = "Feature",
                 StateName = "New",

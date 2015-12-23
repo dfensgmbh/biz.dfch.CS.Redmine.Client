@@ -121,8 +121,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                         };
                         IssueMetaData metaData = new IssueMetaData()
                         {
-                            AssignedToLogin = TestEnvironment.UserLogin2,
-                            AuthorLogin = TestEnvironment.UserLogin1,
+                            AssignedToLogin = string.Format("userP{0}", project.Id),
                             PriorityName = priorities[i % priorities.Length],
                             TrackerName = trackers[i % trackers.Length],
                             StateName = "New",
@@ -139,7 +138,6 @@ namespace biz.dfch.CS.Redmine.Client.Test
                         Assert.AreEqual(issue.DueDate, createdIssue.DueDate, "DueDate was not set correctly");
                         Assert.AreEqual(issue.IsPrivate, createdIssue.IsPrivate, "IsPrivate was not set correctly");
 
-                        Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AuthorLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Author.Id, "Author was not set correctly");
                         Assert.AreEqual(redmineClient.GetUserByLogin(metaData.AssignedToLogin, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.AssignedTo.Id, "AssignedTo was not set correctly");
                         Assert.AreEqual(metaData.PriorityName, createdIssue.Priority.Name, "Priority was not set correctly");
                         Assert.AreEqual(metaData.TrackerName, createdIssue.Tracker.Name, "Tracker was not set correctly");

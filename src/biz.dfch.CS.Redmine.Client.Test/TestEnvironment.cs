@@ -78,8 +78,8 @@ namespace biz.dfch.CS.Redmine.Client.Test
             TestEnvironment.TotalAttempts = 3;
             TestEnvironment.BaseRetryIntervallMilliseconds = 100;
             TestEnvironment.AttachmentFilePath = @"C:\Users\Administrator\Desktop\test.txt";
-            TestEnvironment.NumberOfProjectsToCreate = 3;
-            TestEnvironment.NumberOfIssuesToCreate = 5;
+            TestEnvironment.NumberOfProjectsToCreate = 1000;
+            TestEnvironment.NumberOfIssuesToCreate = 1;
         }
 
 

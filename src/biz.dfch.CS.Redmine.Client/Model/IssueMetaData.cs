@@ -29,10 +29,6 @@ namespace biz.dfch.CS.Redmine.Client.Model
         /// </summary>
         public string AssignedToLogin { get; set; }
         /// <summary>
-        /// Login of the author of the issue
-        /// </summary>
-        public string AuthorLogin { get; set; }
-        /// <summary>
         /// Identifier of the project the issue belongs to
         /// </summary>
         public string ProjectIdentifier { get; set; }
