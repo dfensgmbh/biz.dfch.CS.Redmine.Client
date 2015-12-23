@@ -1096,6 +1096,31 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
+        public void AddUserToProjectUsingObject()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsFalse(projectUsers.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User already in project befor update");
+
+            object userRoles = new List<string> { "Reporter" };
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                userRoles, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(addedProjectUser.Roles, "No roles received for user");
+            Assert.IsTrue(addedProjectUser.Roles.Count > 0, "Role list empty for user");
+            Assert.IsTrue(addedProjectUser.Roles.Contains("Reporter"), "User has no the defined role in the project");
+
+            IList<ProjectUser> projectUsersAfterUpdate = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+            Assert.IsTrue(projectUsersAfterUpdate.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User was not added to project");
+
+            redmineClient.RemoveUserFromProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
+                TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
         public void AddUserToProjectUsingKeys()
         {
             RedmineClient redmineClient = new RedmineClient();

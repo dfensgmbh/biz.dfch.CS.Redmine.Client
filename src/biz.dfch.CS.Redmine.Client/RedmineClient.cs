@@ -201,7 +201,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Project> projects = RedmineClient.InvokeWithRetries(() =>
                 {
                     RedmineManager redmineManager = this.GetRedmineManager();
-                   return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
+                    return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
                 }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return projects;
@@ -1378,9 +1378,43 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userLogin">The login of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectIdentifier, userLogin, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, IList<string> roleNames)
         {
             return this.AddUserToProject(projectIdentifier, userLogin, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectIdentifier">The identifier of the project to get the users for</param>
+        /// <param name="userLogin">The login of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(string projectIdentifier, string userLogin, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectIdentifier, userLogin, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
         }
 
         /// <summary>
@@ -1417,10 +1451,45 @@ namespace biz.dfch.CS.Redmine.Client
         /// <param name="userId">The id of the user</param>
         /// <param name="roleNames">The names of the roles the user will have in the project</param>
         /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, object roleNames)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectId, userId, (IList<string>)roleNames);
+        }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <returns>The info objec for the user in the project</returns>
         public ProjectUser AddUserToProject(int projectId, int userId, IList<string> roleNames)
         {
             return this.AddUserToProject(projectId, userId, roleNames, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
+
+        /// <summary>
+        /// Add a user to a project
+        /// </summary>
+        /// <param name="projectId">The id of the project</param>
+        /// <param name="userId">The id of the user</param>
+        /// <param name="roleNames">The names of the roles the user will have in the project</param>
+        /// <param name="totalAttempts">Total attempts that are made for a request</param>
+        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
+        /// <returns>The info objec for the user in the project</returns>
+        public ProjectUser AddUserToProject(int projectId, int userId, object roleNames, int totalAttempts, int baseRetryIntervallMilliseconds)
+        {
+            #region Contract
+            Contract.Requires(roleNames is IList<string>, "roleNames must be IList<string>");
+            #endregion Contract
+
+            return this.AddUserToProject(projectId, userId, (IList<string>)roleNames, totalAttempts, baseRetryIntervallMilliseconds);
+        }
+
 
         /// <summary>
         /// Add a user to a project
@@ -1564,7 +1633,7 @@ namespace biz.dfch.CS.Redmine.Client
             #endregion Contract
 
             return this.UpdateUserRoles(projectIdentifier, userLogin, (IList<string>)roleNames);
-  
+
         }
 
         /// <summary>
