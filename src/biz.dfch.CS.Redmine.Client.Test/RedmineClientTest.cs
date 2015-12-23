@@ -380,7 +380,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         [TestMethod]
         [TestCategory("SkipOnTeamCity")]
-        public void GetIssueListFilteredAccortingToState()
+        public void GetIssueListFilteredAccordingToState()
         {
             RedmineClient redmineClient = new RedmineClient();
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
@@ -397,6 +397,76 @@ namespace biz.dfch.CS.Redmine.Client.Test
             foreach (Issue issue in issues)
             {
                 Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(queryParameters.StateName, issue.Status.Name, "Issue with wrong state loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccordingToPriority()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueQueryParameters queryParameters = new IssueQueryParameters()
+            {
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+                PriorityName = "High",
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(queryParameters.PriorityName, issue.Priority.Name, "Issue with wrong priority loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccortingToTracker()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueQueryParameters queryParameters = new IssueQueryParameters()
+            {
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+                TrackerName = "Feature",
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(queryParameters.TrackerName, issue.Tracker.Name, "Issue from wrong tracker loaded");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void GetIssueListFilteredAccortingToAssignee()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            IssueQueryParameters queryParameters = new IssueQueryParameters()
+            {
+                ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
+                AssigneeLogin = "test",
+            };
+            IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issues, "No issues received");
+            Assert.IsTrue(issues.Count > 0, "Issue list is empty");
+            foreach (Issue issue in issues)
+            {
+                Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
+                Assert.AreEqual(TestEnvironment.UserId2, issue.AssignedTo.Id, "Issue from wrong user loaded");
             }
         }
 
@@ -996,7 +1066,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             foreach (ProjectUser projectUser in projectUsers)
             {
                 Assert.IsNotNull(projectUser.Roles, "No roles received for user");
-                Assert.IsTrue(projectUser.Roles.Count>0, "Role list empty for user");
+                Assert.IsTrue(projectUser.Roles.Count > 0, "Role list empty for user");
             }
         }
 
@@ -1010,7 +1080,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
             Assert.IsFalse(projectUsers.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User already in project befor update");
 
-            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2, 
+            ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
                 new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             Assert.IsNotNull(addedProjectUser.Roles, "No roles received for user");
@@ -1146,7 +1216,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             redmineClient.Login(TestEnvironment.RedminUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             IList<ProjectUser> projectUsers = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-           
+
             ProjectUser addedProjectUser = redmineClient.AddUserToProject(TestEnvironment.ProjectId, TestEnvironment.UserId2,
                 new List<string> { "Reporter" }, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -1158,7 +1228,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
             Assert.IsTrue(success, "Did not receive success");
             IList<ProjectUser> projectUsersAfterRemove = redmineClient.GetUsersInProject(TestEnvironment.ProjectId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
-            Assert.IsFalse(projectUsersAfterRemove.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User in project after remove");      
+            Assert.IsFalse(projectUsersAfterRemove.Any(pu => pu.UserLogin == TestEnvironment.UserLogin2), "User in project after remove");
         }
 
         [TestMethod]
