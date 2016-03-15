@@ -129,9 +129,9 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="redmine-net45-api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\redmine-net-api\redmine-net45-api\bin\Debug\redmine-net45-api.dll</HintPath>
+    <Reference Include="redmine-net45-api-signed, Version=1.0.2.0, Culture=neutral, PublicKeyToken=86170fac6fbd88cd, processorArchitecture=MSIL">
+      <HintPath>..\packages\redmine-api-signed.1.0.2\lib\net45\redmine-net45-api-signed.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
