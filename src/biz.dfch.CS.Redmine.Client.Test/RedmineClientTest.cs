@@ -63,6 +63,55 @@ namespace biz.dfch.CS.Redmine.Client.Test
 
         }
 
+        private Uri serverBaseUri = new Uri("http://www.example.com/arbitrary-folder");
+        private string apiKey = "arbitrary-valid-api-key";
+        private readonly string password = "arbitrary-password-as-we-are-using-the-api-key-as-a-username";
+
+        [TestCategory("SkipOnTeamCity")]
+        [TestMethod]
+        public void LoginWithValidApiKey()
+        {
+            // Arrange
+            var sut = new RedmineClient();
+
+            // Act
+            var result = sut.Login(serverBaseUri.AbsoluteUri, apiKey, password, 5, 1000);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+
+        [TestCategory("SkipOnTeamCity")]
+        [TestMethod]
+        public void LoginWithInvalidApiKey()
+        {
+            // Arrange
+            apiKey = "invalid-api-key";
+            var sut = new RedmineClient();
+
+            var result = false;
+
+            // Act
+            try
+            {
+                result = sut.Login(serverBaseUri.AbsoluteUri, apiKey, password, 5, 1000);
+            }
+            catch
+            {
+                // ignore exception - it is expected, 
+                // so we just continue and assert in the finally block
+
+                // Note: for some reason the ExceptedException attribute cannot resolve the actual exception
+                // Redmine.Net.Api.RedmineException, therefore this workaround
+            }
+            finally
+            {
+                // Assert
+                Assert.IsFalse(result);
+            }
+        }
+
         #endregion Login
 
         #region Projects
