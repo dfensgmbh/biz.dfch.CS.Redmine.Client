@@ -16,9 +16,6 @@
  
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
@@ -183,6 +180,22 @@ namespace biz.dfch.CS.Redmine.Client.Test
                     bool success = redmineClient.DeleteProject(project.Id, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
                     Assert.IsTrue(success, "Did not receive success");
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void DeleteAttachments()
+        {
+            var redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedmineUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            var attachments = redmineClient.GetAttachments(TestEnvironment.IssueId);
+
+            foreach (var attachment in attachments)
+            {
+                redmineClient.DeleteAttachment(attachment.Id);
+                Assert.IsTrue(true, "Did not receive success");
             }
         }
     }

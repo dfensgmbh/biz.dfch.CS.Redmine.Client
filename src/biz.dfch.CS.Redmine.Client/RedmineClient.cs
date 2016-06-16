@@ -1281,6 +1281,17 @@ namespace biz.dfch.CS.Redmine.Client
             return createdAttachment;
         }
 
+        public void DeleteAttachment(int attachmentId)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(attachmentId > 0, "No attachment id defined");
+            #endregion Contract
+
+            var redmineManager = this.GetRedmineManager();
+            redmineManager.DeleteObject<Attachment>(attachmentId.ToString(), null);
+        }
+
         #endregion Attachements
 
         #region Journals
