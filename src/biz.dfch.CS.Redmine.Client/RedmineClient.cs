@@ -26,6 +26,7 @@ using biz.dfch.CS.Redmine.Client.Model;
 using biz.dfch.CS.Utilities.Logging;
 using Redmine.Net.Api;
 using Redmine.Net.Api.Types;
+using Redmine.Net.Api.Exceptions;
 
 namespace biz.dfch.CS.Redmine.Client
 {
@@ -2667,7 +2668,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>A new redmine manager</returns>
         private RedmineManager GetRedmineManager(string redmineUrl, string username, string password)
         {
-            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.json, false);
+            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.Json, false);
             redmineManager.PageSize = this.PageSize;
             return redmineManager;
         }

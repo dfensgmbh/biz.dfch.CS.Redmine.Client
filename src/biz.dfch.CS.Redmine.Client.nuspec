@@ -26,7 +26,7 @@ d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
 * See [Releases](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/releases) and [Tags](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/tags) on [GitHub](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client)
 		</description>
         <summary>A C#/.NET Client for Redmine project management web application</summary>
-        <releaseNotes>20151223
+        <releaseNotes>20160616
 * Initial release
 </releaseNotes>
         <copyright>Copyright © 2015 d-fens GmbH</copyright>
@@ -35,6 +35,7 @@ d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
 			<dependency id="biz.dfch.CS.System.Utilities" version="2.0.0" />
 			<dependency id="Newtonsoft.Json" version="6.0.8" />
 			<dependency id="log4net" version="2.0.3" />
+			<dependency id="redmine-api" version="1.0.4" />
 		</dependencies>
     </metadata>
 	<files>
