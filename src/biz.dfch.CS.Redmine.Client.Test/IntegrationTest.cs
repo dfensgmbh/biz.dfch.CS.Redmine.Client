@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
+using System.IO;
+﻿using System.Linq;
 
 namespace biz.dfch.CS.Redmine.Client.Test
 {
@@ -153,15 +155,62 @@ namespace biz.dfch.CS.Redmine.Client.Test
             redmineClient.Login(TestEnvironment.RedmineUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
             var attachments = redmineClient.GetAttachments(TestEnvironment.IssueId);
+            var attachment = attachments.FirstOrDefault(p => p.Id == TestEnvironment.AttachmentId);
 
-            foreach (var attachment in attachments)
+            Assert.IsNotNull(attachment, "No attachment found");
+
+            var name = string.Format("UPDATED_FILE_NAME_{0}.txt", attachment.Id);
+            var description = string.Format("UPDATED_FILE_DESCRIPTION_{0}", attachment.Id);
+
+            attachment.FileName = name;
+            attachment.Description = description;
+
+            redmineClient.UpdateAttachment(TestEnvironment.IssueId, attachment);
+
+            var updateAttachment = redmineClient.GetAttachment(TestEnvironment.AttachmentId);
+
+            Assert.IsNotNull(updateAttachment, "updated attachment not found");
+            Assert.IsTrue(updateAttachment.FileName == name, "Did not receive success");
+            Assert.IsTrue(true, "Did not receive success");
+            Assert.IsTrue(true, "Did not receive success");
+            Assert.IsTrue(true, "Did not receive success");
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateAttachmentForIssue()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedmineUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue issue = redmineClient.GetIssue(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issue, "No issue received");
+
+            var contentType = "text/plain";
+            var fileName = "TestAttachment.txt";
+            var description = "Uploadet via API";
+            var notes = "Note for the attachment";
+
+            var attachmentData = new AttachmentData
             {
-                attachment.FileName = string.Format("UPDATED_FILE_NAME_{0}.jpg", attachment.Id);
-                attachment.Description = string.Format("UPDATED_FILE_DESCRIPTION_{0}", attachment.Id);
+                Content = File.ReadAllBytes(TestEnvironment.AttachmentFilePath),
+                ContentType = contentType,
+                FileName = fileName,
+                Description = description,
+                Notes = notes,
+                PrivateNotes = true
+            };
 
-                redmineClient.UpdateAttachment(TestEnvironment.IssueId, attachment);
-                Assert.IsTrue(true, "Did not receive success");
-            }
+            redmineClient.CreateAttachment(issue.Id, attachmentData);
+
+            IList<Attachment> attachments = redmineClient.GetAttachments(TestEnvironment.IssueId);
+
+            Assert.IsNotNull(attachments, "No attachments received");
+            Assert.AreEqual(1, attachments.Count, 0, "No attachment or wrong count");
+            Assert.AreEqual(attachments[0].ContentType, contentType);
+            Assert.AreEqual(attachments[0].Description, description);
+            Assert.AreEqual(attachments[0].FileName, fileName);
         }
 
         [TestMethod]
