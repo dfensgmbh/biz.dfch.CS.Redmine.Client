@@ -2817,7 +2817,7 @@ namespace biz.dfch.CS.Redmine.Client
         private T GetCachedItem<T>(string id)
             where T : class, IEquatable<T>
         {
-            return _cache.Get<T>(id);
+            return _cache.Get<T>(GenerateKey<T>(id));
         }
 
         private IList<T> GetCachedItems<T>()
