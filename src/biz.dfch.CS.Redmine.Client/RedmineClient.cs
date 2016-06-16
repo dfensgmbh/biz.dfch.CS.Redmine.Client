@@ -2760,7 +2760,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>A new redmine manager</returns>
         private RedmineManager GetRedmineManager(string redmineUrl, string username, string password)
         {
-            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.json, false);
+            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.Json, false);
             redmineManager.PageSize = this.PageSize;
             return redmineManager;
         }

@@ -35,7 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="redmine-net45-api-signed, Version=1.0.2.0, Culture=neutral, PublicKeyToken=86170fac6fbd88cd, processorArchitecture=MSIL">
     <Reference Include="redmine-net45-api, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\redmine-api.1.0.4\lib\net45\redmine-net45-api.dll</HintPath>
       <Private>True</Private>
