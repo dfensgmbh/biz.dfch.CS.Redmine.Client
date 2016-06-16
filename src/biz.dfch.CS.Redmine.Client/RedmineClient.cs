@@ -1573,7 +1573,7 @@ namespace biz.dfch.CS.Redmine.Client
                 var redmineManager = this.GetRedmineManager();
                 var items = redmineManager.GetObjects<User>(new NameValueCollection());
 
-                AddOrUpdateCachedItems(items);
+                AddOrUpdateCachedIdentifiableItems(items);
 
                 return items;
             }, totalAttempts, baseRetryIntervallMilliseconds);
@@ -1619,7 +1619,7 @@ namespace biz.dfch.CS.Redmine.Client
                 var redmineManager = this.GetRedmineManager();
                 var item = redmineManager.GetObject<User>(id.ToString(), new NameValueCollection());
 
-                AddOrUpdateCachedItem(item);
+                AddOrUpdateCachedIdentifiableItem(item);
 
                 return item;
             }, totalAttempts, baseRetryIntervallMilliseconds);
@@ -1700,7 +1700,7 @@ namespace biz.dfch.CS.Redmine.Client
                 var redmineManager = GetRedmineManager();
                 var item = redmineManager.CreateObject(user);
 
-                AddOrUpdateCachedItem(item);
+                AddOrUpdateCachedIdentifiableItem(item);
 
                 return item;
             }, totalAttempts, baseRetryIntervallMilliseconds);
@@ -2832,7 +2832,13 @@ namespace biz.dfch.CS.Redmine.Client
             AddOrUpdateCachedItem(item.Id.ToString(), item);
         }
 
-        private void AddOrUpdateCachedItem<T>(Identifiable<T> item)
+        private void AddOrUpdateCachedItem<T>(T item)
+            where T : IdentifiableName, IEquatable<T>
+        {
+            AddOrUpdateCachedItem(item.Id.ToString(), (T)item);
+        }
+
+        private void AddOrUpdateCachedIdentifiableItem<T>(T item)
             where T : Identifiable<T>, IEquatable<T>
         {
             AddOrUpdateCachedItem(item.Id.ToString(), (T)item);
@@ -2844,22 +2850,32 @@ namespace biz.dfch.CS.Redmine.Client
             _cache.AddOrUpdate(GenerateKey<T>(id), item);
         }
 
-        private void AddOrUpdateCachedItems(IEnumerable<IdentifiableName> items)
+        private void AddOrUpdateCachedItems<T>(IEnumerable<T> items)
+            where T: IdentifiableName, IEquatable<T>
         {
             foreach (var item in items)
             {
-                _cache.AddOrUpdate(GenerateKey<IdentifiableName>(item.Id.ToString()), item);
+                _cache.AddOrUpdate(GenerateKey<T>(item.Id.ToString()), item);
             }
         }
 
-        private void AddOrUpdateCachedItems<T>(IEnumerable<Identifiable<T>> items)
+        private void AddOrUpdateCachedIdentifiableItems<T>(IEnumerable<T> items)
             where T : Identifiable<T>, IEquatable<T>
         {
             foreach (var item in items)
             {
-                _cache.AddOrUpdate(GenerateKey<IdentifiableName>(item.Id.ToString()), (T)item);
+                _cache.AddOrUpdate(GenerateKey<T>(item.Id.ToString()), item);
             }
         }
+
+        //private void AddOrUpdateCachedItems<T>(IEnumerable<Identifiable<T>> items)
+        //    where T : Identifiable<T>, IEquatable<T>
+        //{
+        //    foreach (var item in items)
+        //    {
+        //        _cache.AddOrUpdate(GenerateKey<IdentifiableName>(item.Id.ToString()), (T)item);
+        //    }
+        //}
 
         private void RemoveCachedItem<T>(string id)
              where T : class, IEquatable<T>
