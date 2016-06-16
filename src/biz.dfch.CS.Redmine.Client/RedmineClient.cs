@@ -19,13 +19,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using biz.dfch.CS.Redmine.Client.Model;
+﻿using biz.dfch.CS.Redmine.Client.Model;
 using biz.dfch.CS.Utilities.Logging;
 using Redmine.Net.Api;
-using Redmine.Net.Api.Types;
+﻿using Redmine.Net.Api.Exceptions;
+﻿using Redmine.Net.Api.Types;
 
 namespace biz.dfch.CS.Redmine.Client
 {
@@ -47,6 +46,12 @@ namespace biz.dfch.CS.Redmine.Client
         private const int PAGE_SIZE = 100;
 
         #endregion Constants
+
+        #region Members
+
+        private readonly MemoryCacheHelper _cache;
+
+        #endregion
 
         #region Properties
 
@@ -92,6 +97,7 @@ namespace biz.dfch.CS.Redmine.Client
             this.TotalAttempts = RedmineClient.TOTAL_ATTEMPTS;
             this.BaseRetryIntervallMilliseconds = RedmineClient.BASE_RETRY_INTERVAL_MILLISECONDS;
             this.PageSize = RedmineClient.PAGE_SIZE;
+            this._cache = new MemoryCacheHelper();
         }
 
         #endregion Constructors
@@ -134,14 +140,14 @@ namespace biz.dfch.CS.Redmine.Client
             this.Logout(); // Ensure old login info is removed
 
             this.IsLoggedIn = RedmineClient.InvokeWithRetries(() =>
-                {
-                    //Test if the credentials are valid
-                    RedmineManager redmineManager = this.GetRedmineManager(redmineUrl, username, password);
-                    IList<Project> projects = redmineManager.GetObjectList<Project>(new NameValueCollection());
+            {
+                //Test if the credentials are valid
+                RedmineManager redmineManager = this.GetRedmineManager(redmineUrl, username, password);
+                IList<Project> projects = redmineManager.GetObjectList<Project>(new NameValueCollection());
 
-                    //if there is no error the credentials are valid
-                    return null != projects;
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+                //if there is no error the credentials are valid
+                return null != projects;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             if (this.IsLoggedIn)
             {
@@ -198,11 +204,20 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetProjects({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<Project> projects = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetTotalObjectList<Project>(new NameValueCollection());
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var cachedItems = GetCachedItems<Project>();
+
+            if (cachedItems.Any())
+                return cachedItems;
+
+            IList<Project> projects = InvokeWithRetries(() =>
+            {
+                var redmineManager = GetRedmineManager();
+                var items = redmineManager.GetObjects<Project>(new NameValueCollection());
+
+                AddOrUpdateCachedItems(items);
+
+                return items;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return projects;
         }
@@ -235,11 +250,20 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
 
-            Project project = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetObject<Project>(id.ToString(), new NameValueCollection());
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var cachedItem = GetCachedItem<Project>(id.ToString());
+
+            if (cachedItem != null)
+                return cachedItem;
+
+            var project = InvokeWithRetries(() =>
+            {
+                var redmineManager = this.GetRedmineManager();
+                var item = redmineManager.GetObject<Project>(id.ToString(), new NameValueCollection());
+
+                AddOrUpdateCachedItem(item);
+
+                return item;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return project;
         }
@@ -316,16 +340,22 @@ namespace biz.dfch.CS.Redmine.Client
 
             if (!string.IsNullOrEmpty(parentIdentifier))
             {
-                Project parent = this.GetProjectByIdentifier(parentIdentifier);
+                var parent = GetCachedItem<Project>(parentIdentifier) ?? GetProjectByIdentifier(parentIdentifier);
+
                 Contract.Assert(null != parent, string.Format("No project with identifier {0} found", parentIdentifier));
-                project.Parent = new IdentifiableName() { Id = parent.Id };
+
+                project.Parent = new IdentifiableName { Id = parent.Id };
             }
 
-            Project createdProject = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.CreateObject(project);
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var createdProject = InvokeWithRetries(() =>
+            {
+                var redmineManager = GetRedmineManager();
+                var item = redmineManager.CreateObject(project);
+
+                AddOrUpdateCachedItem(item);
+
+                return item;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return createdProject;
         }
@@ -361,17 +391,22 @@ namespace biz.dfch.CS.Redmine.Client
 
             if (!string.IsNullOrEmpty(parentIdentifier))
             {
-                Project parent = this.GetProjectByIdentifier(parentIdentifier);
+                var parent = GetCachedItem<Project>(parentIdentifier) ?? GetProjectByIdentifier(parentIdentifier);
+
                 Contract.Assert(null != parent, string.Format("No project with identifier {0} found", parentIdentifier));
+
                 project.Parent = new IdentifiableName() { Id = parent.Id };
             }
 
-            Project updatedProject = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    redmineManager.UpdateObject(project.Id.ToString(), project);
-                    return this.GetProject(project.Id, totalAttempts, baseRetryIntervallMilliseconds);
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var updatedProject = InvokeWithRetries(() =>
+            {
+                var redmineManager = GetRedmineManager();
+                redmineManager.UpdateObject(project.Id.ToString(), project);
+
+                RemoveCachedItem<Project>(project.Id.ToString());
+
+                return GetProject(project.Id, totalAttempts, baseRetryIntervallMilliseconds);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return updatedProject;
         }
@@ -404,12 +439,15 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.DeleteProject({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
 
-            bool success = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    redmineManager.DeleteObject<Project>(id.ToString(), new NameValueCollection());
-                    return true;
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var success = InvokeWithRetries(() =>
+            {
+                var redmineManager = GetRedmineManager();
+
+                redmineManager.DeleteObject<Project>(id.ToString(), new NameValueCollection());
+                RemoveCachedItem<Project>(id.ToString());
+
+                return true;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return success;
         }
@@ -544,44 +582,44 @@ namespace biz.dfch.CS.Redmine.Client
             Trace.WriteLine(string.Format("RedmineClient.GetIssues({0}, {1}, {2})", "queryParameters", totalAttempts, baseRetryIntervallMilliseconds));
 
             IList<Issue> issues = RedmineClient.InvokeWithRetries(() =>
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                if (null != queryParameters)
                 {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    NameValueCollection parameters = new NameValueCollection();
-                    if (null != queryParameters)
+                    if (!string.IsNullOrEmpty(queryParameters.ProjectIdentifier))
                     {
-                        if (!string.IsNullOrEmpty(queryParameters.ProjectIdentifier))
-                        {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Project: {0}", queryParameters.ProjectIdentifier));
-                            Project project = this.GetProjectByIdentifier(queryParameters.ProjectIdentifier);
-                            parameters.Add(RedmineKeys.PROJECT_ID, project.Id.ToString());
-                        }
-                        if (!string.IsNullOrEmpty(queryParameters.StateName))
-                        {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.StateName));
-                            IssueStatus state = this.GetIssueStateByName(queryParameters.StateName);
-                            parameters.Add(RedmineKeys.STATUS_ID, state.Id.ToString());
-                        }
-                        if (!string.IsNullOrEmpty(queryParameters.PriorityName))
-                        {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Priority: {0}", queryParameters.PriorityName));
-                            IssuePriority priority = this.GetIssuePriorityByName(queryParameters.PriorityName);
-                            parameters.Add(RedmineKeys.PRIORITY_ID, priority.Id.ToString());
-                        }
-                        if (!string.IsNullOrEmpty(queryParameters.TrackerName))
-                        {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.TrackerName));
-                            Tracker tracker = this.GetTrackerByName(queryParameters.TrackerName);
-                            parameters.Add(RedmineKeys.TRACKER_ID, tracker.Id.ToString());
-                        }
-                        if (!string.IsNullOrEmpty(queryParameters.AssignedToLogin))
-                        {
-                            Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssignedToLogin));
-                            User assignee = this.GetUserByLogin(queryParameters.AssignedToLogin);
-                            parameters.Add(RedmineKeys.ASSIGNED_TO_ID, assignee.Id.ToString());
-                        }
+                        Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Project: {0}", queryParameters.ProjectIdentifier));
+                        Project project = this.GetProjectByIdentifier(queryParameters.ProjectIdentifier);
+                        parameters.Add(RedmineKeys.PROJECT_ID, project.Id.ToString());
                     }
-                    return redmineManager.GetTotalObjectList<Issue>(parameters);
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+                    if (!string.IsNullOrEmpty(queryParameters.StateName))
+                    {
+                        Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.StateName));
+                        IssueStatus state = this.GetIssueStateByName(queryParameters.StateName);
+                        parameters.Add(RedmineKeys.STATUS_ID, state.Id.ToString());
+                    }
+                    if (!string.IsNullOrEmpty(queryParameters.PriorityName))
+                    {
+                        Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Priority: {0}", queryParameters.PriorityName));
+                        IssuePriority priority = this.GetIssuePriorityByName(queryParameters.PriorityName);
+                        parameters.Add(RedmineKeys.PRIORITY_ID, priority.Id.ToString());
+                    }
+                    if (!string.IsNullOrEmpty(queryParameters.TrackerName))
+                    {
+                        Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter State: {0}", queryParameters.TrackerName));
+                        Tracker tracker = this.GetTrackerByName(queryParameters.TrackerName);
+                        parameters.Add(RedmineKeys.TRACKER_ID, tracker.Id.ToString());
+                    }
+                    if (!string.IsNullOrEmpty(queryParameters.AssignedToLogin))
+                    {
+                        Trace.WriteLine(string.Format("RedmineClient.GetIssues QueryParameter Assignee: {0}", queryParameters.AssignedToLogin));
+                        User assignee = this.GetUserByLogin(queryParameters.AssignedToLogin);
+                        parameters.Add(RedmineKeys.ASSIGNED_TO_ID, assignee.Id.ToString());
+                    }
+                }
+                return redmineManager.GetObjects<Issue>(parameters);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return issues;
         }
@@ -615,10 +653,10 @@ namespace biz.dfch.CS.Redmine.Client
             Trace.WriteLine(string.Format("RedmineClient.GetIssue({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
 
             Issue issue = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetObject<Issue>(id.ToString(), new NameValueCollection());
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.GetObject<Issue>(id.ToString(), new NameValueCollection());
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return issue;
         }
@@ -761,10 +799,10 @@ namespace biz.dfch.CS.Redmine.Client
 
             this.SetIssueMetaData(issueData, issue, totalAttempts, baseRetryIntervallMilliseconds);
             Issue createdIssue = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.CreateObject(issue);
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.CreateObject(issue);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             //Notes will not be saved when creating a new issue, so we have to make an update to save them.
             if (!string.IsNullOrEmpty(issueData.Notes))
@@ -1250,10 +1288,10 @@ namespace biz.dfch.CS.Redmine.Client
             Trace.WriteLine(string.Format("RedmineClient.GetAttachment({0}, {1}, {2}, {3})", issueId, attachmentData.FileName, totalAttempts, baseRetryIntervallMilliseconds));
 
             Upload uploadedFile = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.UploadFile(attachmentData.Content);
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                return redmineManager.UploadFile(attachmentData.Content);
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             Issue issue = this.GetIssue(issueId, totalAttempts, baseRetryIntervallMilliseconds);
 
@@ -1313,13 +1351,13 @@ namespace biz.dfch.CS.Redmine.Client
             Trace.WriteLine(string.Format("RedmineClient.GetJournals({0}, {1}, {2})", issueId, totalAttempts, baseRetryIntervallMilliseconds));
 
             IList<Journal> journals = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    NameValueCollection parameters = new NameValueCollection();
-                    parameters.Add("include", "journals");
-                    Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
-                    return issue.Journals;
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            {
+                RedmineManager redmineManager = this.GetRedmineManager();
+                NameValueCollection parameters = new NameValueCollection();
+                parameters.Add("include", "journals");
+                Issue issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
+                return issue.Journals;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return journals;
         }
@@ -1525,10 +1563,19 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<User> users = RedmineClient.InvokeWithRetries(() =>
+            var cachedUsers = GetCachedItems<User>();
+
+            if (cachedUsers.Any())
+                return cachedUsers;
+
+            IList<User> users = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetTotalObjectList<User>(new NameValueCollection());
+                var redmineManager = this.GetRedmineManager();
+                var items = redmineManager.GetObjects<User>(new NameValueCollection());
+
+                AddOrUpdateCachedItems(items);
+
+                return items;
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return users;
@@ -1562,10 +1609,19 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            User user = RedmineClient.InvokeWithRetries(() =>
+            var cachedItem = GetCachedItem<User>(id.ToString());
+
+            if (cachedItem != null)
+                return cachedItem;
+
+            var user = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetObject<User>(id.ToString(), new NameValueCollection());
+                var redmineManager = this.GetRedmineManager();
+                var item = redmineManager.GetObject<User>(id.ToString(), new NameValueCollection());
+
+                AddOrUpdateCachedItem(item);
+
+                return item;
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return user;
@@ -1599,9 +1655,9 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetUserByLogin({0}, {1}, {2})", login, totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+            var users = GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
+            var user = users.FirstOrDefault(s => s.Login == login);
 
-            User user = users.FirstOrDefault(s => s.Login == login);
             if (user == null)
             {
                 //If there is no user with the specified login throw an exception so that the behaviour is the same as for other redmine objects
@@ -1639,10 +1695,14 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.CreateUser({0}, {1}, {2})", user.Id, totalAttempts, baseRetryIntervallMilliseconds));
 
-            User createdUser = RedmineClient.InvokeWithRetries(() =>
+            var createdUser = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.CreateObject<User>(user);
+                var redmineManager = GetRedmineManager();
+                var item = redmineManager.CreateObject(user);
+
+                AddOrUpdateCachedItem(item);
+
+                return item;
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return createdUser;
@@ -1676,11 +1736,14 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.UpdateUser({0}, {1}, {2})", user.Id, totalAttempts, baseRetryIntervallMilliseconds));
 
-            User updatedUser = RedmineClient.InvokeWithRetries(() =>
+            var updatedUser = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
+                var redmineManager = GetRedmineManager();
                 redmineManager.UpdateObject(user.Id.ToString(), user);
-                return this.GetUser(user.Id, totalAttempts, baseRetryIntervallMilliseconds);
+                RemoveCachedItem<User>(user.Id.ToString());
+
+                return GetUser(user.Id, totalAttempts, baseRetryIntervallMilliseconds);
+
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return updatedUser;
@@ -1714,10 +1777,12 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.DeleteUser({0}, {1}, {2})", id, totalAttempts, baseRetryIntervallMilliseconds));
 
-            bool success = RedmineClient.InvokeWithRetries(() =>
+            var success = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
+                var redmineManager = GetRedmineManager();
                 redmineManager.DeleteObject<User>(id.ToString(), new NameValueCollection());
+                RemoveCachedItem<User>(id.ToString());
+
                 return true;
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
@@ -1791,7 +1856,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetObjects<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             IList<User> users = this.GetUsers(totalAttempts, baseRetryIntervallMilliseconds);
@@ -2203,7 +2268,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetObjects<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             ProjectMembership toUpdate = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
@@ -2307,7 +2372,7 @@ namespace biz.dfch.CS.Redmine.Client
                 RedmineManager redmineManager = this.GetRedmineManager();
                 NameValueCollection parameters = new NameValueCollection();
                 parameters.Add(RedmineKeys.PROJECT_ID, projectId.ToString());
-                return redmineManager.GetTotalObjectList<ProjectMembership>(parameters);
+                return redmineManager.GetObjects<ProjectMembership>(parameters);
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             ProjectMembership toDelete = memberships.FirstOrDefault(ms => ms.Project.Id == projectId && null != ms.User && ms.User.Id == userId);
@@ -2375,11 +2440,20 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssueStates({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<IssueStatus> states = RedmineClient.InvokeWithRetries(() =>
-                {
-                    RedmineManager redmineManager = this.GetRedmineManager();
-                    return redmineManager.GetTotalObjectList<IssueStatus>(new NameValueCollection());
-                }, totalAttempts, baseRetryIntervallMilliseconds);
+            var cachedItems = GetCachedItems<IssueStatus>();
+
+            if (cachedItems.Any())
+                return cachedItems;
+
+            IList<IssueStatus> states = InvokeWithRetries(() =>
+            {
+                var redmineManager = GetRedmineManager();
+                var items = redmineManager.GetObjects<IssueStatus>(new NameValueCollection());
+
+                AddOrUpdateCachedItems(items);
+
+                return items;
+            }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return states;
         }
@@ -2412,8 +2486,9 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssueStateByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<IssueStatus> states = this.GetIssueStates(totalAttempts, baseRetryIntervallMilliseconds);
-            IssueStatus state = states.FirstOrDefault(s => s.Name == name);
+            var states = GetIssueStates(totalAttempts, baseRetryIntervallMilliseconds);
+            var state = states.FirstOrDefault(s => s.Name == name);
+
             if (state == null)
             {
                 //If there is no state with the specified name throw an exception so that the behaviour is the same as for other redmine objects
@@ -2448,10 +2523,20 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorities({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<IssuePriority> priorities = RedmineClient.InvokeWithRetries(() =>
+            var cachedItems = GetCachedItems<IssuePriority>();
+
+            if (cachedItems.Any())
+                return cachedItems;
+
+            IList<IssuePriority> priorities = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetTotalObjectList<IssuePriority>(new NameValueCollection());
+                var redmineManager = GetRedmineManager();
+                var items = redmineManager.GetObjects<IssuePriority>(new NameValueCollection());
+
+                AddOrUpdateCachedItems(items);
+
+                return items;
+
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return priorities;
@@ -2485,8 +2570,9 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetIssuePriorityByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<IssuePriority> priortities = this.GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
-            IssuePriority priority = priortities.FirstOrDefault(s => s.Name == name);
+            var priortities = GetIssuePriorities(totalAttempts, baseRetryIntervallMilliseconds);
+            var priority = priortities.FirstOrDefault(s => s.Name == name);
+
             if (priority == null)
             {
                 //If there is no priority with the specified name throw an exception so that the behaviour is the same as for other redmine objects
@@ -2521,10 +2607,19 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetUsers({0}, {1})", totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<Tracker> trackers = RedmineClient.InvokeWithRetries(() =>
+            var cachedItems = GetCachedItems<Tracker>();
+
+            if (cachedItems.Any())
+                return cachedItems;
+
+            IList<Tracker> trackers = InvokeWithRetries(() =>
             {
-                RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetTotalObjectList<Tracker>(new NameValueCollection());
+                var redmineManager = GetRedmineManager();
+                var items = redmineManager.GetObjects<Tracker>(new NameValueCollection());
+
+                AddOrUpdateCachedItems(items);
+
+                return items;
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return trackers;
@@ -2533,7 +2628,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Gets a tracker (issue type) by name
         /// </summary>
-        /// <param name="login">The name of the tracker</param>
+        /// <param name="name">The name of the tracker</param>
         /// <returns>The tracker with the specified name</returns>
         public Tracker GetTrackerByName(string name)
         {
@@ -2543,7 +2638,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <summary>
         /// Gets a tracker (issue type) by name
         /// </summary>
-        /// <param name="login">The name of the tracker</param>
+        /// <param name="name">The name of the tracker</param>
         /// <param name="totalAttempts">Total attempts that are made for a request</param>
         /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The tracker with the specified name</returns>
@@ -2558,9 +2653,9 @@ namespace biz.dfch.CS.Redmine.Client
 
             Trace.WriteLine(string.Format("RedmineClient.GetTrackerByName({0}, {1}, {2})", name, totalAttempts, baseRetryIntervallMilliseconds));
 
-            IList<Tracker> trackers = this.GetTrackers(totalAttempts, baseRetryIntervallMilliseconds);
+            var trackers = GetTrackers(totalAttempts, baseRetryIntervallMilliseconds);
+            var tracker = trackers.FirstOrDefault(s => s.Name == name);
 
-            Tracker tracker = trackers.FirstOrDefault(s => s.Name == name);
             if (tracker == null)
             {
                 //If there is no tracker with the specified name throw an exception so that the behaviour is the same as for other redmine objects
@@ -2598,7 +2693,7 @@ namespace biz.dfch.CS.Redmine.Client
             IList<Role> roles = RedmineClient.InvokeWithRetries(() =>
             {
                 RedmineManager redmineManager = this.GetRedmineManager();
-                return redmineManager.GetTotalObjectList<Role>(new NameValueCollection());
+                return redmineManager.GetObjects<Role>(new NameValueCollection());
             }, totalAttempts, baseRetryIntervallMilliseconds);
 
             return roles;
@@ -2608,8 +2703,6 @@ namespace biz.dfch.CS.Redmine.Client
         /// Gets a role by the role name
         /// </summary>
         /// <param name="name">The name of the role</param>
-        /// <param name="totalAttempts">Total attempts that are made for a request</param>
-        /// <param name="baseRetryIntervallMilliseconds">Default base retry intervall milliseconds</param>
         /// <returns>The role with the specified name</returns>
         public Role GetRoleByName(string name)
         {
@@ -2719,5 +2812,72 @@ namespace biz.dfch.CS.Redmine.Client
 
         #endregion Retry Mechanism
 
+        #region Caching
+
+        private T GetCachedItem<T>(string id)
+            where T : class, IEquatable<T>
+        {
+            return _cache.Get<T>(id);
+        }
+
+        private IList<T> GetCachedItems<T>()
+            where T : class, IEquatable<T>
+        {
+            var cachedItems = _cache.GetAll<T>();
+            return cachedItems as IList<T> ?? cachedItems.ToList();
+        }
+
+        private void AddOrUpdateCachedItem(IdentifiableName item)
+        {
+            AddOrUpdateCachedItem(item.Id.ToString(), item);
+        }
+
+        private void AddOrUpdateCachedItem<T>(Identifiable<T> item)
+            where T : Identifiable<T>, IEquatable<T>
+        {
+            AddOrUpdateCachedItem(item.Id.ToString(), (T)item);
+        }
+
+        private void AddOrUpdateCachedItem<T>(string id, T item)
+            where T : class, IEquatable<T>
+        {
+            _cache.AddOrUpdate(GenerateKey<T>(id), item);
+        }
+
+        private void AddOrUpdateCachedItems(IEnumerable<IdentifiableName> items)
+        {
+            foreach (var item in items)
+            {
+                _cache.AddOrUpdate(GenerateKey<IdentifiableName>(item.Id.ToString()), item);
+            }
+        }
+
+        private void AddOrUpdateCachedItems<T>(IEnumerable<Identifiable<T>> items)
+            where T : Identifiable<T>, IEquatable<T>
+        {
+            foreach (var item in items)
+            {
+                _cache.AddOrUpdate(GenerateKey<IdentifiableName>(item.Id.ToString()), (T)item);
+            }
+        }
+
+        private void RemoveCachedItem<T>(string id)
+             where T : class, IEquatable<T>
+        {
+            _cache.Remove<T>(GenerateKey<T>(id));
+        }
+
+        private static string GenerateKey<T>(string id)
+            where T : class, IEquatable<T>
+        {
+            return GenerateKey(typeof(T).Name, id);
+        }
+
+        private static string GenerateKey(string typeName, string id)
+        {
+            return string.Format("{0}_{1}", typeName, id);
+        }
+
+        #endregion
     }
 }
