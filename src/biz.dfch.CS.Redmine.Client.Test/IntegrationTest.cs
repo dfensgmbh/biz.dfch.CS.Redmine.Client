@@ -16,9 +16,6 @@
  
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
@@ -145,6 +142,25 @@ namespace biz.dfch.CS.Redmine.Client.Test
                         Assert.AreEqual(redmineClient.GetProjectByIdentifier(metaData.ProjectIdentifier, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds).Id, createdIssue.Project.Id, "Project was not set correctly");
                     }
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void UpdateAttachments()
+        {
+            var redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedmineUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            var attachments = redmineClient.GetAttachments(TestEnvironment.IssueId);
+
+            foreach (var attachment in attachments)
+            {
+                attachment.FileName = string.Format("UPDATED_FILE_NAME_{0}.jpg", attachment.Id);
+                attachment.Description = string.Format("UPDATED_FILE_DESCRIPTION_{0}", attachment.Id);
+
+                redmineClient.UpdateAttachment(TestEnvironment.IssueId, attachment);
+                Assert.IsTrue(true, "Did not receive success");
             }
         }
 

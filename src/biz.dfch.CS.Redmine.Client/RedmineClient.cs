@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using biz.dfch.CS.Redmine.Client.Model;
 using biz.dfch.CS.Utilities.Logging;
 using Redmine.Net.Api;
@@ -1279,6 +1277,29 @@ namespace biz.dfch.CS.Redmine.Client
                 .FirstOrDefault(a => a.FileName == attachmentData.FileName);
 
             return createdAttachment;
+        }
+
+        public void UpdateAttachment(int issueId, Attachment attachment)
+        {
+            #region Contract
+            Contract.Requires(this.IsLoggedIn, "Not logged in, call method login first");
+            Contract.Requires(issueId > 0, "No issue id defined");
+            #endregion Contract
+
+            var redmineManager = this.GetRedmineManager();
+            var parameters = new NameValueCollection {{"include", "attachments"}};
+            var issue = redmineManager.GetObject<Issue>(issueId.ToString(), parameters);
+            var dbAttachment = issue.Attachments.FirstOrDefault(p => p.Id == attachment.Id);
+
+            if (dbAttachment == null)
+            {
+                throw new RedmineException("Not Found");
+            }
+
+            dbAttachment.FileName = attachment.FileName;
+            dbAttachment.Description = attachment.Description;
+
+            redmineManager.UpdateObject(issueId.ToString(), issue);
         }
 
         #endregion Attachements
