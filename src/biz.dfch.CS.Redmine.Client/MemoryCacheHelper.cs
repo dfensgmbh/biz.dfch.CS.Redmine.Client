@@ -53,7 +53,7 @@ namespace biz.dfch.CS.Redmine.Client
                 Priority = cachePriority,
                 AbsoluteExpiration = absoluteExpiration,
                 RemovedCallback = CacheEntryRemoved,
-                UpdateCallback = CacheEntryUpdated
+                //UpdateCallback = CacheEntryUpdated
             };
 
             if (_cache.Contains(key))
