@@ -16,7 +16,8 @@
  
 ﻿using System;
 using System.Collections.Generic;
-using biz.dfch.CS.Redmine.Client.Model;
+﻿using System.IO;
+﻿using biz.dfch.CS.Redmine.Client.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Redmine.Net.Api.Types;
 
@@ -126,6 +127,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
                             Notes = string.Format("This is very important as we want to {0}", issue.Description),
                             PrivateNotes = true,
                         };
+
                         Issue createdIssue = redmineClient.CreateIssue(issue, metaData, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
                         Assert.IsNotNull(createdIssue, "No issue received");
@@ -143,6 +145,43 @@ namespace biz.dfch.CS.Redmine.Client.Test
                     }
                 }
             }
+        }
+
+        [TestMethod]
+        [TestCategory("SkipOnTeamCity")]
+        public void CreateAttachmentForIssue()
+        {
+            RedmineClient redmineClient = new RedmineClient();
+            redmineClient.Login(TestEnvironment.RedmineUrl, TestEnvironment.RedmineLogin, TestEnvironment.RedminePassword, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Issue issue = redmineClient.GetIssue(TestEnvironment.IssueId, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
+
+            Assert.IsNotNull(issue, "No issue received");
+
+            var contentType = "text/plain";
+            var fileName = "TestAttachment.txt";
+            var description = "Uploadet via API";
+            var notes = "Note for the attachment";
+
+            var attachmentData = new AttachmentData
+            {
+                Content = File.ReadAllBytes(TestEnvironment.AttachmentFilePath),
+                ContentType = contentType,
+                FileName = fileName,
+                Description = description,
+                Notes = notes,
+                PrivateNotes = true
+            };
+
+            redmineClient.CreateAttachment(issue.Id, attachmentData);
+
+            IList<Attachment> attachments = redmineClient.GetAttachments(TestEnvironment.IssueId);
+
+            Assert.IsNotNull(attachments, "No attachments received");
+            Assert.AreEqual(1, attachments.Count, 0, "No attachment or wrong count");
+            Assert.AreEqual(attachments[0].ContentType, contentType);
+            Assert.AreEqual(attachments[0].Description, description);
+            Assert.AreEqual(attachments[0].FileName, fileName);
         }
 
         [TestMethod]

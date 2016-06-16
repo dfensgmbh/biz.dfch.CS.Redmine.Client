@@ -1180,7 +1180,7 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>The new created attachment</returns>
         public Attachment CreateAttachment(int issueId, AttachmentData attachmentData)
         {
-            return this.CreateAttachment(issueId, attachmentData);
+            return this.CreateAttachment(issueId, attachmentData, this.TotalAttempts, this.BaseRetryIntervallMilliseconds);
         }
 
         /// <summary>

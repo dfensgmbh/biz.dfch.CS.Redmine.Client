@@ -530,7 +530,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             IssueQueryParameters queryParameters = new IssueQueryParameters()
             {
                 ProjectIdentifier = TestEnvironment.ProjectIdentifier1,
-                AssignedToLogin = "test",
+                AssignedToLogin = TestEnvironment.UserLogin1,
             };
             IList<Issue> issues = redmineClient.GetIssues(queryParameters, TestEnvironment.TotalAttempts, TestEnvironment.BaseRetryIntervallMilliseconds);
 
@@ -539,7 +539,7 @@ namespace biz.dfch.CS.Redmine.Client.Test
             foreach (Issue issue in issues)
             {
                 Assert.AreEqual(TestEnvironment.ProjectId, issue.Project.Id, "Issue from wrong project loaded");
-                Assert.AreEqual(TestEnvironment.UserId2, issue.AssignedTo.Id, "Issue from wrong user loaded");
+                Assert.AreEqual(TestEnvironment.UserId1, issue.AssignedTo.Id, "Issue from wrong user loaded");
             }
         }
 
