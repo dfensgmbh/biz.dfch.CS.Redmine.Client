@@ -145,6 +145,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheItem.cs" />
     <Compile Include="MemoryCacheHelper.cs" />
     <Compile Include="Model\AttachmentData.cs" />
     <Compile Include="Model\IssueMetaData.cs" />
