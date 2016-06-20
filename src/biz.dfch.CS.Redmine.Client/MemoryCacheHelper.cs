@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Caching;
 using biz.dfch.CS.Utilities.Logging;
 
@@ -28,21 +29,21 @@ namespace biz.dfch.CS.Redmine.Client
             _offsetInMinutes = offsetInMinutes;
         }
 
-        public void AddOrUpdate<T>(string key, T item)
-            where T : class, IEquatable<T>
+        public void AddOrUpdate<T>(string key, CacheItem<T> item)
+            where T: IEquatable<T>
         {
             AddOrUpdate(key, item, ItemCachePriority.Default, DateTimeOffset.Now.AddMinutes(_offsetInMinutes));
         }
 
-        public void AddOrUpdate<T>(string key, T item, ItemCachePriority priority)
-            where T : class, IEquatable<T>
+        public void AddOrUpdate<T>(string key, CacheItem<T> item, ItemCachePriority priority)
+                where T: IEquatable<T>
         {
             AddOrUpdate(key, item, priority, DateTimeOffset.Now.AddMinutes(_offsetInMinutes));
         }
 
-        public static void AddOrUpdate<T>(string key, T item, ItemCachePriority priority,
+        public static void AddOrUpdate<T>(string key, CacheItem<T> item, ItemCachePriority priority,
             DateTimeOffset absoluteExpiration)
-            where T : class, IEquatable<T>
+                where T: IEquatable<T>
         {
             var cachePriority = (priority == ItemCachePriority.Default
                 ? CacheItemPriority.Default
@@ -53,7 +54,6 @@ namespace biz.dfch.CS.Redmine.Client
                 Priority = cachePriority,
                 AbsoluteExpiration = absoluteExpiration,
                 RemovedCallback = CacheEntryRemoved,
-                //UpdateCallback = CacheEntryUpdated
             };
 
             if (_cache.Contains(key))
@@ -64,39 +64,34 @@ namespace biz.dfch.CS.Redmine.Client
             _cache.Set(key, item, policy);
         }
 
-        public IEnumerable<T> GetAll<T>()
-            where T : class, IEquatable<T>
-        {
-            var items = _cache
-                .Where(p => p.Key.StartsWith(typeof(T).Name))
-                .Select(p => (T)p.Value);
-
-            return items;
-        }
-
-        public T Get<T>(string key)
-            where T : class, IEquatable<T>
-        {
-            return _cache.Get(key) as T;
-        }
-
-        public void Remove<T>(string key)
+        public IEnumerable<CacheItem<T>> GetAll<T>()
             where T : IEquatable<T>
+        {
+            return _cache.Select(p=>p.Value).OfType<CacheItem<T>>();
+        }
+
+        public IEnumerable<CacheItem<T>> GetAllByClause<T>(Func<CacheItem<T>, bool> whereClause)
+            where T : class, IEquatable<T>
+        {
+            var items = GetAll<T>();
+
+            return whereClause != null
+                ? items.Where(whereClause)
+                : items;
+        }
+
+        public CacheItem<T> Get<T>(string key)
+            where T : IEquatable<T>
+        {
+            return (CacheItem<T>) _cache.Get(key);
+        }
+
+        public void Remove(string key)
         {
             if (!_cache.Contains(key))
                 return;
 
             _cache.Remove(key);
-        }
-
-        private static void CacheEntryUpdated(CacheEntryUpdateArguments arguments)
-        {
-            var msg = string.Format("Reason: {0} | Key: {1} | Item: {2}",
-                arguments.RemovedReason,
-                arguments.Key,
-                arguments.UpdatedCacheItem.Value);
-
-            Trace.WriteLine(msg);
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
