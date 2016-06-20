@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.CS.Redmine.Client</id>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <title>biz.dfch.CS.Redmine.Client</title>
         <authors>d-fens GmbH</authors>
         <owners>d-fens GmbH</owners>
@@ -26,8 +26,8 @@ d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
 * See [Releases](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/releases) and [Tags](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/tags) on [GitHub](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client)
 		</description>
         <summary>A C#/.NET Client for Redmine project management web application</summary>
-        <releaseNotes>20160616
-* Initial release
+        <releaseNotes>20160620
+* Caching fixed
 </releaseNotes>
         <copyright>Copyright © 2015 d-fens GmbH</copyright>
         <tags>dfch Redmine C#</tags>
