@@ -1338,7 +1338,7 @@ namespace biz.dfch.CS.Redmine.Client
             dbAttachment.FileName = attachment.FileName;
             dbAttachment.Description = attachment.Description;
 
-            redmineManager.UpdateObject(issueId.ToString(), issue);
+            redmineManager.UpdateAttachment(issueId, dbAttachment);
         }
 
         #endregion Attachements
