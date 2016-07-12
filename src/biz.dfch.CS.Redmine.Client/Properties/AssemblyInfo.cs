@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("biz.dfch.CS.Redmine.Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription(".NET Client for the Redmine REST API")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("d-fens")]
 [assembly: AssemblyProduct("biz.dfch.CS.Redmine.Client")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("Copyright © 2015-2016")]
+[assembly: AssemblyTrademark("d-fens is a trademark in the European Union and/or other countries")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
