@@ -2771,6 +2771,7 @@ namespace biz.dfch.CS.Redmine.Client
                     , 
                     MimeFormat.Json
                     , 
+                    // ignore server certificate error (i.e. do not validate)
                     false
                     , 
                     // we really do not care about the proxy, but have to specify null 
