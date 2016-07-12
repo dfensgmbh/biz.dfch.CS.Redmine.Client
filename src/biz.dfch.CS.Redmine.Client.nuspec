@@ -26,15 +26,18 @@ d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
 * See [Releases](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/releases) and [Tags](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client/tags) on [GitHub](https://github.com/dfensgmbh/biz.dfch.CS.Redmine.Client)
 		</description>
         <summary>A C#/.NET Client for Redmine project management web application</summary>
-        <releaseNotes>20160620
-* Caching fixed
+        <releaseNotes>20160712
+* changed creation of underlying Redmine client to use the current ServicePointManager.SecurityProtocol setting (instead of reverting to the default SSL3 value from the underlying Redmine client)
+* updated target .NET Framework version to 4.6
+* updated log4net to 2.0.5 (from 2.0.3)
+* updated biz.dfch.CS.System.Utilities to 2.0.1 (from 2.0.0)
 </releaseNotes>
-        <copyright>Copyright © 2015 d-fens GmbH</copyright>
+        <copyright>Copyright © 2015-2016 d-fens GmbH</copyright>
         <tags>dfch Redmine C#</tags>
         <dependencies>
-			<dependency id="biz.dfch.CS.System.Utilities" version="2.0.0" />
+			<dependency id="biz.dfch.CS.System.Utilities" version="2.0.1" />
 			<dependency id="Newtonsoft.Json" version="6.0.8" />
-			<dependency id="log4net" version="2.0.3" />
+			<dependency id="log4net" version="2.0.5" />
 			<dependency id="redmine-api" version="1.0.4" />
 		</dependencies>
     </metadata>
