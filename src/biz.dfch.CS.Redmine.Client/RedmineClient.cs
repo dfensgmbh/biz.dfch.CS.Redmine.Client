@@ -25,6 +25,7 @@ using biz.dfch.CS.Utilities.Logging;
 using Redmine.Net.Api;
 ﻿using Redmine.Net.Api.Exceptions;
 ﻿using Redmine.Net.Api.Types;
+using System.Net;
 
 namespace biz.dfch.CS.Redmine.Client
 {
@@ -2783,7 +2784,29 @@ namespace biz.dfch.CS.Redmine.Client
         /// <returns>A new redmine manager</returns>
         private RedmineManager GetRedmineManager(string redmineUrl, string username, string password)
         {
-            RedmineManager redmineManager = new RedmineManager(redmineUrl, username, password, MimeFormat.Json, false);
+            RedmineManager redmineManager = new RedmineManager
+                (
+                    redmineUrl
+                    , 
+                    username
+                    , 
+                    password
+                    , 
+                    MimeFormat.Json
+                    , 
+                    // ignore server certificate error (i.e. do not validate)
+                    false
+                    , 
+                    // we really do not care about the proxy, but have to specify null 
+                    // as this is a default parameter and we need to specify the next one
+                    null
+                    , 
+                    // this is an ugly hack: as the underlying Redmine client sets the 
+                    // SecurityProtocol and that enum does not have a default value, we 
+                    // pass in the current setting (and know that the Redmine client will 
+                    // use that one to overwrite the global setting again)
+                    ServicePointManager.SecurityProtocol
+                );
             redmineManager.PageSize = this.PageSize;
             return redmineManager;
         }
