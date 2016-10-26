@@ -136,7 +136,7 @@ namespace biz.dfch.CS.Redmine.Client
             Contract.Requires(baseRetryIntervallMilliseconds > 0, "BaseRetryIntervallMilliseconds must be greater than 0");
             #endregion Contract
 
-            Trace.WriteLine(string.Format("RedmineClient.Login({0}, {1}, {2}, {3}, {4})", redmineUrl, username, password, totalAttempts, baseRetryIntervallMilliseconds));
+            Trace.WriteLine(string.Format("RedmineClient.Login({0}, {1}, {2}, {3})", redmineUrl, username, totalAttempts, baseRetryIntervallMilliseconds));
 
             this.Logout(); // Ensure old login info is removed
 
